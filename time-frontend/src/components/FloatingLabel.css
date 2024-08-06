@@ -1,0 +1,9 @@
+input::placeholder {
+    opacity: 0;
+  }
+  
+  label {
+    pointer-events: none;
+    transition: all 0.2s ease-out;
+  }
+  
