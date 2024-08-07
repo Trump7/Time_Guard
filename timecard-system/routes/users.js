@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require('../models/User');
 const Timecard = require('../models/Timecard');
 
+//add a new user
 router.post('/', async(req, res) => {
     const user = new User(req.body);
     try{
@@ -15,6 +16,18 @@ router.post('/', async(req, res) => {
         res.status(400).send(error);
     }
 });
+
+//get all current users
+router.get('/', async (req, res) => {
+    try {
+      const users = await User.find();
+      res.send(users);
+    } catch (error) {
+      console.log('Error fetching users:', error);
+      res.status(500).send(error);
+    }
+  });
+  
 
 router.post('/validate', async(req, res) => {
     const {rfid} = req.body;

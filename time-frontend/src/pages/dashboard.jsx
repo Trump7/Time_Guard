@@ -93,8 +93,8 @@ const Dashboard = ({ userName, onLogout }) => {
         try {
           if (selectedEmployee && modalType === 'edit') {
             // Update employee
-            const response = await axios.put(`${BASE_URL}/${selectedEmployee.id}`, newEmployee);
-            setEmployees(employees.map(emp => (emp.id === selectedEmployee.id ? response.data : emp)));
+            const response = await axios.put(`${BASE_URL}/${selectedEmployee._id}`, newEmployee);
+            setEmployees(employees.map(emp => (emp._id === selectedEmployee._id ? response.data : emp)));
           } else if (modalType === 'add') {
             // Add new employee
             const response = await axios.post(BASE_URL, newEmployee);
@@ -108,8 +108,8 @@ const Dashboard = ({ userName, onLogout }) => {
     } else if (modalType === 'message') {
       try {
         // Delete employee
-        await axios.delete(`${BASE_URL}/${selectedEmployee.id}`);
-        setEmployees(employees.filter(emp => emp.id !== selectedEmployee.id));
+        await axios.delete(`${BASE_URL}/${selectedEmployee._id}`);
+        setEmployees(employees.filter(emp => emp._id !== selectedEmployee._id));
         handleCloseModal();
       } catch (error) {
         console.error('Error deleting employee:', error);
@@ -140,7 +140,7 @@ const Dashboard = ({ userName, onLogout }) => {
           />
           <div className="overflow-y-auto flex-grow scrollbar p-2" style={{ maxHeight: '600px' }}>
             {filteredEmployees.map(employee => (
-              <div key={employee.id} className="flex justify-between items-center bg-gray-100 p-2 mb-3 rounded-xl shadow-md">
+              <div key={employee._id} className="flex justify-between items-center bg-gray-100 p-2 mb-3 rounded-xl shadow-md">
                 <span>{employee.name}</span>
                 <div>
                   <button onClick={() => handleEditEmployeeClick(employee)} className="px-3 py-2 rounded hover:bg-gray-200 mr-2">
