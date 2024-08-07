@@ -13,22 +13,38 @@ const Dashboard = ({ userName, onLogout }) => {
 
   // Placeholder data for employees
   const [employees, setEmployees] = useState([
-    { id: 1, name: 'John Doe' },
-    { id: 2, name: 'Jane Smith' },
-    { id: 3, name: 'Alice Johnson' },
-    { id: 4, name: 'Bob Brown' },
-    { id: 5, name: 'John Doe' },
-    { id: 6, name: 'Jane Smith' },
-    { id: 7, name: 'Alice Johnson' },
-    { id: 8, name: 'Bob Brown' },
-    { id: 9, name: 'John Doe' },
-    { id: 10, name: 'Jane Smith' },
-    { id: 11, name: 'Alice Johnson' },
-    { id: 12, name: 'Bob Brown' },
+    { id: 1, name: 'John Doe', rfid: '123456', shortName: 'John' },
+    { id: 2, name: 'Jane Smith', rfid: '654321', shortName: 'Jane' },
+    { id: 3, name: 'Alice Johnson', rfid: '112233', shortName: 'Alice' },
+    { id: 4, name: 'Bob Brown', rfid: '445566', shortName: 'Bob' },
+    { id: 5, name: 'John Doe', rfid: '123456', shortName: 'John' },
+    { id: 6, name: 'Jane Smith', rfid: '654321', shortName: 'Jane' },
+    { id: 7, name: 'Alice Johnson', rfid: '112233', shortName: 'Alice' },
+    { id: 8, name: 'Bob Brown', rfid: '445566', shortName: 'Bob' },
+    { id: 9, name: 'John Doe', rfid: '123456', shortName: 'John' },
+    { id: 10, name: 'Jane Smith', rfid: '654321', shortName: 'Jane' },
+    { id: 11, name: 'Alice Johnson', rfid: '112233', shortName: 'Alice' },
+    { id: 12, name: 'Bob Brown', rfid: '445566', shortName: 'Bob' },
+    { id: 13, name: 'a', rfid: '123456', shortName: 'John' },
+    { id: 14, name: 'a', rfid: '654321', shortName: 'Jane' },
+    { id: 15, name: 'a', rfid: '112233', shortName: 'Alice' },
+    { id: 16, name: 'a', rfid: '445566', shortName: 'Bob' },
+    // Add more employees as needed
   ]);
+
+  // Placeholder data for live updates section
+  const [liveUpdates, setLiveUpdates] = useState([
+    { id: 1, name: 'John Doe', date: '08/07', inTime: '09:00:00', outTime: '' },
+    { id: 2, name: 'Jane Smith', date: '08/07', inTime: '09:15:00', outTime: '17:00:00' },
+    // Add more updates as needed
+  ]);
+  
 
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalType, setModalType] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [newEmployee, setNewEmployee] = useState({ fullName: '', rfid: '', shortName: '' });
   const [errors, setErrors] = useState({});
 
@@ -38,12 +54,30 @@ const Dashboard = ({ userName, onLogout }) => {
   );
 
   const handleAddEmployeeClick = () => {
+    setNewEmployee({ fullName: '', rfid: '', shortName: '' });
+    setErrors({});
+    setModalType('add');
+    setIsModalOpen(true);
+  };
+
+  const handleEditEmployeeClick = (employee) => {
+    setSelectedEmployee(employee);
+    setNewEmployee({ fullName: employee.name, rfid: employee.rfid, shortName: employee.shortName });
+    setErrors({});
+    setModalType('edit');
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteEmployeeClick = (employee) => {
+    setSelectedEmployee(employee);
+    setModalMessage('Are you sure you would like to delete this employee? This will remove all history entries associated with this employee. Once done, this cannot be undone!');
+    setModalType('message');
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setNewEmployee({ fullName: '', rfid: '', shortName: '' });
+    setSelectedEmployee(null);
     setErrors({});
   };
 
@@ -55,31 +89,43 @@ const Dashboard = ({ userName, onLogout }) => {
     e.preventDefault();
     let newErrors = {};
 
-    if (!newEmployee.fullName) newErrors.fullName = 'Full Name is required';
-    if (!newEmployee.rfid) newErrors.rfid = 'RFID Number is required';
-    if (newEmployee.rfid.includes(' ')) newErrors.rfid = 'RFID Number should not contain spaces';
-    if (!newEmployee.shortName) newErrors.shortName = 'Short Name is required';
-    if (newEmployee.shortName.length > 7) newErrors.shortName = 'Short Name should be at most 7 characters';
+    if (modalType === 'edit' || modalType === 'add') {
+      if (!newEmployee.fullName) newErrors.fullName = 'Full Name is required';
+      if (!newEmployee.rfid) newErrors.rfid = 'RFID Number is required';
+      if (newEmployee.rfid.includes(' ')) newErrors.rfid = 'RFID Number should not contain spaces';
+      if (!newEmployee.shortName) newErrors.shortName = 'Short Name is required';
+      if (newEmployee.shortName.length > 7) newErrors.shortName = 'Short Name should be at most 7 characters';
 
-    setErrors(newErrors);
+      setErrors(newErrors);
 
-    if (Object.keys(newErrors).length === 0) {
-      setEmployees([...employees, { id: employees.length + 1, name: newEmployee.fullName }]);
+      if (Object.keys(newErrors).length === 0) {
+        if (selectedEmployee && modalType === 'edit') {
+          // Update employee
+          setEmployees(employees.map(emp => (emp.id === selectedEmployee.id ? { ...emp, ...newEmployee, name: newEmployee.fullName } : emp)));
+        } else if (modalType === 'add') {
+          // Add new employee
+          setEmployees([...employees, { id: employees.length + 1, ...newEmployee, name: newEmployee.fullName }]);
+        }
+        handleCloseModal();
+      }
+    } else if (modalType === 'message') {
+      // Delete employee
+      setEmployees(employees.filter(emp => emp.id !== selectedEmployee.id));
       handleCloseModal();
     }
   };
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className="flex flex-col h-screen w-screen overflow-auto">
       <Header isLoggedIn={true} userName={userName} onLogout={onLogout} />
-      <div className="flex flex-grow justify-center p-6 bg-main-background space-x-4">
+      <div className="flex flex-grow justify-center p-6 bg-main-background space-x-4 overflow-auto">
         {/* Employee Box */}
-        <div className="flex flex-col bg-white p-6 rounded-3xl shadow-md min-w-[400px] max-w-[500px] min-h-[300px] max-h-[800px]">
+        <div className="flex flex-col bg-white p-6 rounded-3xl shadow-md min-w-[300px] max-w-[400px] min-h-[710px] flex-grow">
           <div className="flex justify-between items-center mb-8">
             <h3 className="text-2xl">Employees</h3>
             <button
               onClick={handleAddEmployeeClick}
-              className="bg-button-color rounded-3xl text-black px-3 py-2 rounded shadow-md hover:bg-button-hover"
+              className="bg-button-color rounded-3xl text-black px-3 py-1 rounded shadow-md hover:bg-button-hover"
             >
               Add Employee
             </button>
@@ -92,13 +138,13 @@ const Dashboard = ({ userName, onLogout }) => {
           />
           <div className="overflow-y-auto flex-grow scrollbar p-2" style={{ maxHeight: '600px' }}>
             {filteredEmployees.map(employee => (
-              <div key={employee.id} className="flex justify-between items-center bg-gray-100 p-2 mb-2 rounded-xl shadow-md">
+              <div key={employee.id} className="flex justify-between items-center bg-gray-100 p-2 mb-3 rounded-xl shadow-md">
                 <span>{employee.name}</span>
                 <div>
-                  <button className="px-3 py-2 rounded hover:bg-gray-200 mr-2">
+                  <button onClick={() => handleEditEmployeeClick(employee)} className="px-3 py-2 rounded hover:bg-gray-200 mr-2">
                     <FontAwesomeIcon icon={faEdit} />
                   </button>
-                  <button className="px-3 py-2 rounded hover:bg-gray-200">
+                  <button onClick={() => handleDeleteEmployeeClick(employee)} className="px-3 py-2 rounded hover:bg-gray-200">
                     <FontAwesomeIcon icon={faTrashAlt} />
                   </button>
                 </div>
@@ -106,28 +152,51 @@ const Dashboard = ({ userName, onLogout }) => {
             ))}
           </div>
         </div>
-        {/* Middle Boxes and Time/Date */}
-        <div className="flex flex-col justify-center items-center space-y-4 flex-grow max-w-2xl">
-          <div className="flex bg-white p-6 rounded-3xl shadow-md max-w-[400px] min-w-[300px] min-h-[300px] w-full">
+
+        {/* Middle Column */}
+        <div className="flex flex-col justify-between items-center flex-grow min-w-[300px] max-w-[400px]">
+          <div className="flex bg-white p-6 rounded-3xl shadow-md w-full h-full min-h-[300px]">
             <h3 className="text-2xl mb-4">Payroll History</h3>
           </div>
-          <div className="text-center">
+          <div className="flex flex-col items-center justify-center flex-grow mb-4 mt-4">
             <p className="text-4xl">{formattedTime}</p>
             <p className="text-4xl">{formattedDate}</p>
           </div>
-          <div className="flex bg-white p-6 rounded-3xl shadow-md max-w-[400px] min-w-[300px] min-h-[300px] w-full">
+          <div className="flex bg-white p-6 rounded-3xl shadow-md w-full h-full min-h-[300px]">
             <h3 className="text-2xl mb-4">Export / Edit</h3>
           </div>
         </div>
-        {/* Right Box */}
-        <div className="flex flex-col bg-white p-6 rounded-3xl shadow-md min-w-[400px] max-w-[500px] min-h-[300px] max-h-[800px]">
+
+
+        {/* Live Updates Box */}
+        <div className="flex flex-col bg-white p-6 rounded-3xl shadow-md min-w-[300px] max-w-[400px] min-h-[710px] flex-grow">
           <h3 className="text-2xl mb-4">Live Updates</h3>
+          <div className="overflow-y-auto flex-grow scrollbar p-2" style={{ maxHeight: '600px' }}>
+            {liveUpdates.map(update => (
+              <div key={update.id} className="flex flex-col bg-gray-100 p-2 mb-3 rounded-xl shadow-md">
+                <div className="flex justify-between">
+                  <span>{update.name}</span>
+                  <span>{update.date}</span>
+                </div>
+                <div>
+                  <span>In: {update.inTime}</span> <span>Out: {update.outTime || 'N/A'}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
+
       <Modal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        title="Add Employee"
+        title={
+          modalType === 'edit'
+            ? 'Edit Employee'
+            : modalType === 'message'
+            ? 'Delete Employee'
+            : 'Add Employee'
+        }
         onSubmit={handleSubmit}
         errors={errors}
         values={newEmployee}
@@ -135,8 +204,10 @@ const Dashboard = ({ userName, onLogout }) => {
         fields={[
           { name: 'fullName', type: 'text', placeholder: 'Full Name' },
           { name: 'rfid', type: 'text', placeholder: 'RFID Number' },
-          { name: 'shortName', type: 'text', placeholder: 'Short Name (Max 7 characters)' }
+          { name: 'shortName', type: 'text', placeholder: 'Short Name' }
         ]}
+        modalType={modalType}
+        message={modalMessage}
       />
     </div>
   );

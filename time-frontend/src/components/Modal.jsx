@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
 import InputField from './InputField';
 
-const Modal = ({ isOpen, onClose, title, onSubmit, errors, values, onChange, fields }) => {
+const Modal = ({ isOpen, onClose, title, onSubmit, errors, values, onChange, fields, modalType, message }) => {
   if (!isOpen) return null;
 
   return (
@@ -15,23 +15,46 @@ const Modal = ({ isOpen, onClose, title, onSubmit, errors, values, onChange, fie
             <FontAwesomeIcon icon={faTimes} />
           </button>
         </div>
-        <form onSubmit={onSubmit}>
-          {fields.map((field, index) => (
-            <div className="mb-4" key={index}>
-              <InputField
-                type={field.type}
-                placeholder={field.placeholder}
-                value={values[field.name]}
-                onChange={(e) => onChange(field.name, e.target.value)}
-                isError={!!errors[field.name]}
-                errorMessage={errors[field.name]}
-              />
+        {Object.keys(errors).length > 0 && (
+          <div className="bg-red-500 text-white p-2 rounded mb-6">
+            {Object.values(errors).map((error, index) => (
+              <p key={index}>{error}</p>
+            ))}
+          </div>
+        )}
+        {modalType === 'edit' || modalType === 'add' ? (
+          <form onSubmit={onSubmit} noValidate>
+            {fields.map((field, index) => (
+              <div className="mb-4" key={index}>
+                <InputField
+                  type={field.type}
+                  placeholder={field.placeholder}
+                  value={values[field.name]}
+                  onChange={(e) => onChange(field.name, e.target.value)}
+                  isError={!!errors[field.name]}
+                  errorMessage={errors[field.name]}
+                />
+              </div>
+            ))}
+            <button type="submit" className="bg-blue-500 text-white px-3 py-2 rounded shadow-md hover:bg-blue-700">
+              {modalType === 'edit' ? 'Save Information' : 'Add Employee'}
+            </button>
+          </form>
+        ) : (
+          modalType === 'message' && (
+            <div>
+              <p>{message}</p>
+              <div className="mt-4 flex justify-end space-x-2">
+                <button onClick={onClose} className="bg-gray-500 text-white px-3 py-2 rounded shadow-md hover:bg-gray-700">
+                  Cancel
+                </button>
+                <button onClick={onSubmit} className="bg-red-500 text-white px-3 py-2 rounded shadow-md hover:bg-red-700">
+                  I'm Sure
+                </button>
+              </div>
             </div>
-          ))}
-          <button type="submit" className="bg-button-color px-3 py-2 rounded-3xl shadow-md hover:bg-button-hover">
-            {title}
-          </button>
-        </form>
+          )
+        )}
       </div>
     </div>
   );
