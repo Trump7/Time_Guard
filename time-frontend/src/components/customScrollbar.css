@@ -1,0 +1,15 @@
+
+.scrollbar::-webkit-scrollbar {
+  width: 15px; /* Width of the scrollbar */
+}
+
+.scrollbar::-webkit-scrollbar-track {
+  background: transparent; /* Background of the scrollbar track */
+}
+
+.scrollbar::-webkit-scrollbar-thumb {
+  background-color: #EBEBEB; /* Color of the scrollbar thumb */
+  border-radius: 10px; /* Rounded corners */
+  border: 1px solid #D1D5DB; /* Adds padding to the thumb */
+  background-clip: padding-box; /* Ensures the border does not overlap the thumb */
+}

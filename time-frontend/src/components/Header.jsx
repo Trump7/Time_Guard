@@ -9,7 +9,7 @@ const Header = ({ isLoggedIn, userName, onLogout }) => {
           <span className="mr-4">Welcome, {userName}!</span>
           <button
             onClick={onLogout}
-            className="bg-red-500 px-4 py-2 rounded hover:bg-red-700"
+            className="bg-button-color text-black px-3 py-2 rounded-3xl hover:bg-button-hover shadow-md"
           >
             Log Out
           </button>
