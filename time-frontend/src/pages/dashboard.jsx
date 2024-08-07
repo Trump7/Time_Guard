@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 import Header from '../components/Header';
@@ -11,35 +12,12 @@ const Dashboard = ({ userName, onLogout }) => {
   const formattedDate = currentDateTime.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   const formattedTime = currentDateTime.toLocaleTimeString('en-US');
 
-  // Placeholder data for employees
-  const [employees, setEmployees] = useState([
-    { id: 1, name: 'John Doe', rfid: '123456', shortName: 'John' },
-    { id: 2, name: 'Jane Smith', rfid: '654321', shortName: 'Jane' },
-    { id: 3, name: 'Alice Johnson', rfid: '112233', shortName: 'Alice' },
-    { id: 4, name: 'Bob Brown', rfid: '445566', shortName: 'Bob' },
-    { id: 5, name: 'John Doe', rfid: '123456', shortName: 'John' },
-    { id: 6, name: 'Jane Smith', rfid: '654321', shortName: 'Jane' },
-    { id: 7, name: 'Alice Johnson', rfid: '112233', shortName: 'Alice' },
-    { id: 8, name: 'Bob Brown', rfid: '445566', shortName: 'Bob' },
-    { id: 9, name: 'John Doe', rfid: '123456', shortName: 'John' },
-    { id: 10, name: 'Jane Smith', rfid: '654321', shortName: 'Jane' },
-    { id: 11, name: 'Alice Johnson', rfid: '112233', shortName: 'Alice' },
-    { id: 12, name: 'Bob Brown', rfid: '445566', shortName: 'Bob' },
-    { id: 13, name: 'a', rfid: '123456', shortName: 'John' },
-    { id: 14, name: 'a', rfid: '654321', shortName: 'Jane' },
-    { id: 15, name: 'a', rfid: '112233', shortName: 'Alice' },
-    { id: 16, name: 'a', rfid: '445566', shortName: 'Bob' },
-    // Add more employees as needed
-  ]);
-
-  // Placeholder data for live updates section
+  const [employees, setEmployees] = useState([]);
   const [liveUpdates, setLiveUpdates] = useState([
     { id: 1, name: 'John Doe', date: '08/07', inTime: '09:00:00', outTime: '' },
     { id: 2, name: 'Jane Smith', date: '08/07', inTime: '09:15:00', outTime: '17:00:00' },
     // Add more updates as needed
   ]);
-  
-
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('');
@@ -48,7 +26,20 @@ const Dashboard = ({ userName, onLogout }) => {
   const [newEmployee, setNewEmployee] = useState({ fullName: '', rfid: '', shortName: '' });
   const [errors, setErrors] = useState({});
 
-  // Filter employees based on search term
+  const BASE_URL = 'http://192.168.1.122:3000/api/users';
+
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const response = await axios.get(BASE_URL);
+        setEmployees(response.data);
+      } catch (error) {
+        console.error('Error fetching employees:', error);
+      }
+    };
+    fetchEmployees();
+  }, []);
+
   const filteredEmployees = employees.filter(employee =>
     employee.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -85,7 +76,7 @@ const Dashboard = ({ userName, onLogout }) => {
     setNewEmployee({ ...newEmployee, [field]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     let newErrors = {};
 
@@ -99,19 +90,30 @@ const Dashboard = ({ userName, onLogout }) => {
       setErrors(newErrors);
 
       if (Object.keys(newErrors).length === 0) {
-        if (selectedEmployee && modalType === 'edit') {
-          // Update employee
-          setEmployees(employees.map(emp => (emp.id === selectedEmployee.id ? { ...emp, ...newEmployee, name: newEmployee.fullName } : emp)));
-        } else if (modalType === 'add') {
-          // Add new employee
-          setEmployees([...employees, { id: employees.length + 1, ...newEmployee, name: newEmployee.fullName }]);
+        try {
+          if (selectedEmployee && modalType === 'edit') {
+            // Update employee
+            const response = await axios.put(`${BASE_URL}/${selectedEmployee.id}`, newEmployee);
+            setEmployees(employees.map(emp => (emp.id === selectedEmployee.id ? response.data : emp)));
+          } else if (modalType === 'add') {
+            // Add new employee
+            const response = await axios.post(BASE_URL, newEmployee);
+            setEmployees([...employees, response.data]);
+          }
+          handleCloseModal();
+        } catch (error) {
+          console.error('Error saving employee:', error);
         }
-        handleCloseModal();
       }
     } else if (modalType === 'message') {
-      // Delete employee
-      setEmployees(employees.filter(emp => emp.id !== selectedEmployee.id));
-      handleCloseModal();
+      try {
+        // Delete employee
+        await axios.delete(`${BASE_URL}/${selectedEmployee.id}`);
+        setEmployees(employees.filter(emp => emp.id !== selectedEmployee.id));
+        handleCloseModal();
+      } catch (error) {
+        console.error('Error deleting employee:', error);
+      }
     }
   };
 
@@ -166,7 +168,6 @@ const Dashboard = ({ userName, onLogout }) => {
             <h3 className="text-2xl mb-4">Export / Edit</h3>
           </div>
         </div>
-
 
         {/* Live Updates Box */}
         <div className="flex flex-col bg-white p-6 rounded-3xl shadow-md min-w-[300px] max-w-[400px] min-h-[710px] flex-grow">
