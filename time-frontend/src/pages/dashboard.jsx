@@ -24,39 +24,45 @@ const Dashboard = ({ userName, onLogout }) => {
 
   const BASE_URL = 'http://192.168.1.122:3000/api/users';
 
+  //First fetch employee list (So unnecessary api calls are not made)
   useEffect(() => {
     const fetchEmployees = async () => {
-      try {
+      try{
         const response = await axios.get(BASE_URL);
         setEmployees(response.data);
-      } catch (error) {
+      } catch(error) {
         console.error('Error fetching employees:', error);
       }
     };
 
-    const fetchEntries = async () => {
-      try {
-        const response = await axios.get(`${BASE_URL}/history`);
-        console.log(response.data);
-        const updates = response.data.map((entry) => {
-          const user = employees.find((emp) => emp._id === entry.userId);
-          console.log(user);
-          return {
-            id: entry._id,
-            name: user ? user.name : 'Unknown User',
-            date: new Date(entry.clockIn).toLocaleDateString('en-US'),
-            inTime: new Date(entry.clockIn).toLocaleTimeString('en-US'),
-            outTime: entry.clockOut ? new Date(entry.clockOut).toLocaleTimeString('en-US') : 'N/A',
-          };
-        });
-        setLiveUpdates(updates);
-      } catch (error) {
-        console.error('Error fetching history entries:', error);
-      }
-    };
-
-    fetchEmployees().then(fetchEntries); // Ensure employees are fetched before fetching entries
+    fetchEmployees();
   }, []);
+
+  useEffect(() => {
+    //Once all employees are loaded in, load history
+    if(employees.length > 0) {
+      const fetchEntries = async () => {
+        try{
+          const response = await axios.get(`${BASE_URL}/history`);
+          const updates = response.data.map((entry) => {
+            const user = employees.find((emp) => emp._id.toString() === entry.userId.toString());
+            return {
+              id: entry._id,
+              name: user ? user.name : 'Unknown User',
+              date: new Date(entry.clockIn).toLocaleDateString('en-US'),
+              inTime: new Date(entry.clockIn).toLocaleTimeString('en-US'),
+              outTime: entry.clockOut ? new Date(entry.clockOut).toLocaleTimeString('en-US') : 'N/A',
+            };
+          });
+          setLiveUpdates(updates);
+        } catch(error) {
+          console.error('Error fetching history entries:', error);
+        }
+      };
+
+      fetchEntries();
+    }
+  }, [employees]); // Fetch entries only when employees are loaded  
 
   const filteredEmployees = employees.filter(employee =>
     employee.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -109,7 +115,7 @@ const Dashboard = ({ userName, onLogout }) => {
       setErrors(newErrors);
 
       if(Object.keys(newErrors).length === 0) {
-        try {
+        try{
           if(selectedEmployee && modalType === 'edit') {
             //Update employee
             const response = await axios.put(`${BASE_URL}/${selectedEmployee._id}`, newEmployee);
@@ -121,17 +127,17 @@ const Dashboard = ({ userName, onLogout }) => {
             setEmployees([...employees, response.data]);
           }
           handleCloseModal();
-        } catch (error) {
+        } catch(error) {
           console.error('Error saving employee:', error);
         }
       }
     } else if(modalType === 'message') {
-      try {
+      try{
         //Delete employee
         await axios.delete(`${BASE_URL}/${selectedEmployee._id}`);
         setEmployees(employees.filter(emp => emp._id !== selectedEmployee._id));
         handleCloseModal();
-      } catch (error) {
+      } catch(error) {
         console.error('Error deleting employee:', error);
       }
     }
