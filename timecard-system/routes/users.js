@@ -34,7 +34,7 @@ router.get('/', async (req, res) => {
 //get all history entries
 router.get('/history', async (req, res) => {
     try {
-      const history = await Entries.find();
+      const history = await Timecard.find();
       res.send(history);
     } catch (error) {
       console.log('Error fetching history entries:', error);
