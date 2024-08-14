@@ -5,7 +5,7 @@ import { faEdit, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 import Header from '../components/Header';
 import InputField from '../components/InputField';
 import Modal from '../components/Modal';
-import '../components/customScrollbar.css'; //Import the custom scrollbar CSS
+import '../components/customScrollbar.css';
 
 const Dashboard = ({ userName, onLogout }) => {
   const currentDateTime = new Date();
@@ -13,11 +13,6 @@ const Dashboard = ({ userName, onLogout }) => {
   const formattedTime = currentDateTime.toLocaleTimeString('en-US');
 
   const [employees, setEmployees] = useState([]);
-  const [liveUpdates, setLiveUpdates] = useState([
-    { id: 1, name: 'John Doe', date: '08/07', inTime: '09:00:00', outTime: '' },
-    { id: 2, name: 'Jane Smith', date: '08/07', inTime: '09:15:00', outTime: '17:00:00' },
-    //Add more updates as needed
-  ]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('');

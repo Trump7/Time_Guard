@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import Header from '../components/Header';
 import InputField from '../components/InputField';
+import Cookies from 'js-cookie';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const Login = ({ onLogin }) => {
+
+
+const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isUsernameError, setIsUsernameError] = useState(false);
@@ -11,25 +15,45 @@ const Login = ({ onLogin }) => {
   const [errorMessage, setErrorMessage] = useState('');
   const nav = useNavigate();
 
+  const BASE_URL = 'http://192.168.1.122:3000/api/users';
+
 
   //change handleSubmit to handle real data.
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
     let hasError = false;
-    if (username.length < 5) {
+    if (username.length === 0) {
       setIsUsernameError(true);
       hasError = true;
     }
-    if (password.length < 5) {
+    if (password.length === 0) {
       setIsPasswordError(true);
       hasError = true;
     }
     if (hasError) {
-      setErrorMessage('Username and Password must be 5 characters long.');
+      setErrorMessage('Username and Password must be filled in.');
       return;
     }
-    onLogin(username);
-    nav('/dashboard');
+
+    if (Object.keys(hasError).length === 0) {
+      try {
+          const response = await axios.post(`${BASE_URL}/login`, { username, password });
+          const { token } = response.data;
+
+          //Store token in Cookies
+          Cookies.set('token', token, { expires: 0.0833 }); // 6 hours
+          setErrors({});
+
+          //go to dashboard page
+          nav('/dashboard');
+
+          //window.location.reload();
+      } catch (error) {
+        setIsPasswordError(true);
+        setIsUsernameError(true);
+        setErrorMessage('Invalid username or password.');
+      }
+    }    
   };
 
   return (
