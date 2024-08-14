@@ -13,6 +13,11 @@ const Dashboard = ({ userName, onLogout }) => {
   const formattedTime = currentDateTime.toLocaleTimeString('en-US');
 
   const [employees, setEmployees] = useState([]);
+  const [liveUpdates, setLiveUpdates] = useState([
+    { id: 1, name: 'John Doe', date: '08/07', inTime: '09:00:00', outTime: '' },
+    { id: 2, name: 'Jane Smith', date: '08/07', inTime: '09:15:00', outTime: '17:00:00' },
+    //Add more updates as needed
+  ]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('');

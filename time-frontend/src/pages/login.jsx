@@ -42,7 +42,6 @@ const Login = () => {
 
           //Store token in Cookies
           Cookies.set('token', token, { expires: 0.0833 }); // 6 hours
-          setErrors({});
 
           //go to dashboard page
           nav('/dashboard');
@@ -52,6 +51,7 @@ const Login = () => {
         setIsPasswordError(true);
         setIsUsernameError(true);
         setErrorMessage('Invalid username or password.');
+        console.log(error);
       }
     }    
   };

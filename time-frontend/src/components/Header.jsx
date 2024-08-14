@@ -1,6 +1,8 @@
 import React from 'react';
+import Cookies from 'js-cookie';
 
-const Header = ({ isLoggedIn, userName, onLogout }) => {
+
+const Header = ({ isLoggedIn, userName }) => {
   return (
     <header className="bg-main-background p-4 text-black flex justify-between items-center">
       <h1 className="text-5xl">Time Guard</h1>
@@ -17,6 +19,11 @@ const Header = ({ isLoggedIn, userName, onLogout }) => {
       ) : null}
     </header>
   );
+};
+
+const onLogout = () => {
+  Cookies.remove('token');
+  window.location.reload();
 };
 
 export default Header;
