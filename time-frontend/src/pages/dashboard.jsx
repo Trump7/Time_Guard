@@ -5,7 +5,7 @@ import { faEdit, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 import Header from '../components/Header';
 import InputField from '../components/InputField';
 import Modal from '../components/Modal';
-import '../components/customScrollbar.css'; // Import the custom scrollbar CSS
+import '../components/customScrollbar.css'; //Import the custom scrollbar CSS
 
 const Dashboard = ({ userName, onLogout }) => {
   const currentDateTime = new Date();
@@ -16,14 +16,14 @@ const Dashboard = ({ userName, onLogout }) => {
   const [liveUpdates, setLiveUpdates] = useState([
     { id: 1, name: 'John Doe', date: '08/07', inTime: '09:00:00', outTime: '' },
     { id: 2, name: 'Jane Smith', date: '08/07', inTime: '09:15:00', outTime: '17:00:00' },
-    // Add more updates as needed
+    //Add more updates as needed
   ]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('');
   const [modalMessage, setModalMessage] = useState('');
   const [selectedEmployee, setSelectedEmployee] = useState(null);
-  const [newEmployee, setNewEmployee] = useState({ fullName: '', rfid: '', shortName: '' });
+  const [newEmployee, setNewEmployee] = useState({ name: '', short: '', rfid: '' });
   const [errors, setErrors] = useState({});
 
   const BASE_URL = 'http://192.168.1.122:3000/api/users';
@@ -45,7 +45,7 @@ const Dashboard = ({ userName, onLogout }) => {
   );
 
   const handleAddEmployeeClick = () => {
-    setNewEmployee({ fullName: '', rfid: '', shortName: '' });
+    setNewEmployee({ name: '', short: '', rfid: '' });
     setErrors({});
     setModalType('add');
     setIsModalOpen(true);
@@ -53,7 +53,7 @@ const Dashboard = ({ userName, onLogout }) => {
 
   const handleEditEmployeeClick = (employee) => {
     setSelectedEmployee(employee);
-    setNewEmployee({ fullName: employee.name, rfid: employee.rfid, shortName: employee.shortName });
+    setNewEmployee({ name: employee.name, short: employee.short, rfid: employee.rfid });
     setErrors({});
     setModalType('edit');
     setIsModalOpen(true);
@@ -80,23 +80,24 @@ const Dashboard = ({ userName, onLogout }) => {
     e.preventDefault();
     let newErrors = {};
 
-    if (modalType === 'edit' || modalType === 'add') {
-      if (!newEmployee.fullName) newErrors.fullName = 'Full Name is required';
-      if (!newEmployee.rfid) newErrors.rfid = 'RFID Number is required';
-      if (newEmployee.rfid.includes(' ')) newErrors.rfid = 'RFID Number should not contain spaces';
-      if (!newEmployee.shortName) newErrors.shortName = 'Short Name is required';
-      if (newEmployee.shortName.length > 7) newErrors.shortName = 'Short Name should be at most 7 characters';
+    if(modalType === 'edit' || modalType === 'add') {
+      if(!newEmployee.name) newErrors.name = 'Full Name is required';
+      if(!newEmployee.rfid) newErrors.rfid = 'RFID Number is required';
+      if(newEmployee.rfid.includes(' ')) newErrors.rfid = 'RFID Number should not contain spaces';
+      if(!newEmployee.short) newErrors.short = 'Short Name is required';
+      if(newEmployee.short.length > 7) newErrors.short = 'Short Name should be at most 7 characters';
 
       setErrors(newErrors);
 
-      if (Object.keys(newErrors).length === 0) {
+      if(Object.keys(newErrors).length === 0) {
         try {
-          if (selectedEmployee && modalType === 'edit') {
-            // Update employee
+          if(selectedEmployee && modalType === 'edit') {
+            //Update employee
             const response = await axios.put(`${BASE_URL}/${selectedEmployee._id}`, newEmployee);
             setEmployees(employees.map(emp => (emp._id === selectedEmployee._id ? response.data : emp)));
-          } else if (modalType === 'add') {
-            // Add new employee
+          } 
+          else if(modalType === 'add') {
+            //Add new employee
             const response = await axios.post(BASE_URL, newEmployee);
             setEmployees([...employees, response.data]);
           }
@@ -105,9 +106,9 @@ const Dashboard = ({ userName, onLogout }) => {
           console.error('Error saving employee:', error);
         }
       }
-    } else if (modalType === 'message') {
+    } else if(modalType === 'message') {
       try {
-        // Delete employee
+        //Delete employee
         await axios.delete(`${BASE_URL}/${selectedEmployee._id}`);
         setEmployees(employees.filter(emp => emp._id !== selectedEmployee._id));
         handleCloseModal();
@@ -161,6 +162,7 @@ const Dashboard = ({ userName, onLogout }) => {
             <h3 className="text-2xl mb-4">Payroll History</h3>
           </div>
           <div className="flex flex-col items-center justify-center flex-grow mb-4 mt-4">
+          <p className="text-md">Last Updated</p>
             <p className="text-4xl">{formattedTime}</p>
             <p className="text-4xl">{formattedDate}</p>
           </div>
@@ -203,9 +205,9 @@ const Dashboard = ({ userName, onLogout }) => {
         values={newEmployee}
         onChange={handleChange}
         fields={[
-          { name: 'fullName', type: 'text', placeholder: 'Full Name' },
-          { name: 'rfid', type: 'text', placeholder: 'RFID Number' },
-          { name: 'shortName', type: 'text', placeholder: 'Short Name' }
+          { name: 'name', type: 'text', placeholder: 'Full Name' },
+          { name: 'short', type: 'text', placeholder: 'Short Name' },
+          { name: 'rfid', type: 'text', placeholder: 'RFID Number' }
         ]}
         modalType={modalType}
         message={modalMessage}
