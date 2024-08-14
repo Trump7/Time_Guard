@@ -13,11 +13,7 @@ const Dashboard = ({ userName, onLogout }) => {
   const formattedTime = currentDateTime.toLocaleTimeString('en-US');
 
   const [employees, setEmployees] = useState([]);
-  const [liveUpdates, setLiveUpdates] = useState([
-    { id: 1, name: 'John Doe', date: '08/07', inTime: '09:00:00', outTime: '' },
-    { id: 2, name: 'Jane Smith', date: '08/07', inTime: '09:15:00', outTime: '17:00:00' },
-    //Add more updates as needed
-  ]);
+  const [liveUpdates, setLiveUpdates] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('');
@@ -37,12 +33,35 @@ const Dashboard = ({ userName, onLogout }) => {
         console.error('Error fetching employees:', error);
       }
     };
-    fetchEmployees();
+
+    const fetchEntries = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/history`);
+        console.log(response.data);
+        const updates = response.data.map((entry) => {
+          const user = employees.find((emp) => emp._id === entry.userId);
+          console.log(user);
+          return {
+            id: entry._id,
+            name: user ? user.name : 'Unknown User',
+            date: new Date(entry.clockIn).toLocaleDateString('en-US'),
+            inTime: new Date(entry.clockIn).toLocaleTimeString('en-US'),
+            outTime: entry.clockOut ? new Date(entry.clockOut).toLocaleTimeString('en-US') : 'N/A',
+          };
+        });
+        setLiveUpdates(updates);
+      } catch (error) {
+        console.error('Error fetching history entries:', error);
+      }
+    };
+
+    fetchEmployees().then(fetchEntries); // Ensure employees are fetched before fetching entries
   }, []);
 
   const filteredEmployees = employees.filter(employee =>
     employee.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
 
   const handleAddEmployeeClick = () => {
     setNewEmployee({ name: '', short: '', rfid: '' });
@@ -173,7 +192,7 @@ const Dashboard = ({ userName, onLogout }) => {
 
         {/* Live Updates Box */}
         <div className="flex flex-col bg-white p-6 rounded-3xl shadow-md min-w-[300px] max-w-[400px] min-h-[710px] flex-grow">
-          <h3 className="text-2xl mb-4">Live Updates</h3>
+          <h3 className="text-2xl mb-4">Recent Updates</h3>
           <div className="overflow-y-auto flex-grow scrollbar p-2" style={{ maxHeight: '600px' }}>
             {liveUpdates.map(update => (
               <div key={update.id} className="flex flex-col bg-gray-100 p-2 mb-3 rounded-xl shadow-md">

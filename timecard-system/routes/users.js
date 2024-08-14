@@ -29,7 +29,18 @@ router.get('/', async (req, res) => {
       console.log('Error fetching users:', error);
       res.status(500).send(error);
     }
-  });
+});
+
+//get all history entries
+router.get('/history', async (req, res) => {
+    try {
+      const history = await Entries.find();
+      res.send(history);
+    } catch (error) {
+      console.log('Error fetching history entries:', error);
+      res.status(500).send(error);
+    }
+});
   
 
 router.post('/validate', async(req, res) => {
