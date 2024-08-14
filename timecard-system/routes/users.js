@@ -1,7 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const Account = require('../models/Account');
 const Timecard = require('../models/Timecard');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 //add a new user
 router.post('/', async(req, res) => {
@@ -93,5 +96,22 @@ router.get('/:id', async(req, res) => {
         res.status(400).send(error);
     }
 });
+
+// Login Route
+router.post('/login', async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      const user = await Account.findOne({ username });
+      if (!user) return res.status(400).send('User not found');
+  
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) return res.status(400).send('Invalid credentials');
+  
+      const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, { expiresIn: '1h' });
+      res.json({token});
+    } catch (err) {
+      res.status(500).send('Error logging in user');
+    }
+  });
 
 module.exports = router;
