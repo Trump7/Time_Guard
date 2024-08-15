@@ -23,7 +23,7 @@ const Dashboard = ({ userName, onLogout }) => {
   const [newEmployee, setNewEmployee] = useState({ name: '', short: '', rfid: '', row: '' });
   const [errors, setErrors] = useState({});
 
-  const BASE_URL = 'http://192.168.1.122:3000/api/';
+  const BASE_URL = 'http://192.168.1.122:3000/api';
 
   //First fetch employee list (So unnecessary api calls are not made)
   useEffect(() => {
