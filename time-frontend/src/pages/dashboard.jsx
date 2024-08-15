@@ -72,12 +72,12 @@ const Dashboard = ({ userName, onLogout }) => {
         const response = await axios.get(`${BASE_URL}/payroll-history`);
         setPayrollRecord(response.data);
       } catch(error) {
-        console.error('Error fetching employees:', error);
+        console.error('Error fetching Payroll history:', error);
       }
     };
 
     fetchPayroll();
-  }, []);
+  }, [liveUpdates]);
 
   const filteredEmployees = employees.filter(employee =>
     employee.name.toLowerCase().includes(searchTerm.toLowerCase())
