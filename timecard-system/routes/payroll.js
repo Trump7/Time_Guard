@@ -3,6 +3,8 @@ const router = express.Router();
 const User = require('../models/User');
 const Account = require('../models/Account');
 const Timecard = require('../models/Timecard');
+const PHistory = require('../models/PHistory');
+
 const { model } = require('mongoose');
 
 app.get('/download-excel/:fileName', (req, res) => {
@@ -65,7 +67,7 @@ app.post('/finalize-payroll', async (req, res) => {
 
 app.get('/payroll-history', async (req, res) => {
     try {
-      const payrollRecords = await PayrollHistory.find().sort({ periodEndDate: -1 }).exec();
+      const payrollRecords = await PHistory.find().sort({ periodEndDate: -1 }).exec();
       res.status(200).json(payrollRecords);
     } catch (error) {
       res.status(500).send({ message: 'Error retrieving payroll history.' });
