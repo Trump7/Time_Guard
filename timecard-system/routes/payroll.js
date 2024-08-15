@@ -5,8 +5,6 @@ const Account = require('../models/Account');
 const Timecard = require('../models/Timecard');
 const PHistory = require('../models/PHistory');
 
-const { model } = require('mongoose');
-
 router.get('/download-excel/:fileName', (req, res) => {
     const fileName = req.params.fileName;
     const filePath = path.join(__dirname, 'payroll-files', fileName);
@@ -76,4 +74,4 @@ router.get('/payroll-history', async (req, res) => {
   
   
 
-model.exports = router;
+module.exports = router;
