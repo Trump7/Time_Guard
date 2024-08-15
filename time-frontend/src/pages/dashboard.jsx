@@ -13,6 +13,7 @@ const Dashboard = ({ userName, onLogout }) => {
   const formattedTime = currentDateTime.toLocaleTimeString('en-US');
 
   const [employees, setEmployees] = useState([]);
+  const [payrollRecord, setPayrollRecord] = useState([]);
   const [liveUpdates, setLiveUpdates] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -22,13 +23,13 @@ const Dashboard = ({ userName, onLogout }) => {
   const [newEmployee, setNewEmployee] = useState({ name: '', short: '', rfid: '', row: '' });
   const [errors, setErrors] = useState({});
 
-  const BASE_URL = 'http://192.168.1.122:3000/api/users';
+  const BASE_URL = 'http://192.168.1.122:3000/api/';
 
   //First fetch employee list (So unnecessary api calls are not made)
   useEffect(() => {
     const fetchEmployees = async () => {
       try{
-        const response = await axios.get(BASE_URL);
+        const response = await axios.get(`${BASE_URL}/users`);
         setEmployees(response.data);
       } catch(error) {
         console.error('Error fetching employees:', error);
@@ -43,7 +44,7 @@ const Dashboard = ({ userName, onLogout }) => {
     if(employees.length > 0) {
       const fetchEntries = async () => {
         try{
-          const response = await axios.get(`${BASE_URL}/history`);
+          const response = await axios.get(`${BASE_URL}/users/history`);
           const updates = response.data.map((entry) => {
             const user = employees.find((emp) => emp._id.toString() === entry.userId.toString());
             return {
@@ -62,7 +63,21 @@ const Dashboard = ({ userName, onLogout }) => {
 
       fetchEntries();
     }
-  }, [employees]); // Fetch entries only when employees are loaded  
+  }, [employees]); 
+  //fetch entries only when employees are loaded  
+
+  useEffect(() => {
+    const fetchPayroll = async () => {
+      try{
+        const response = await axios.get(`${BASE_URL}/payroll-history`);
+        setPayrollRecord(response.data);
+      } catch(error) {
+        console.error('Error fetching employees:', error);
+      }
+    };
+
+    fetchPayroll();
+  }, []);
 
   const filteredEmployees = employees.filter(employee =>
     employee.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -129,12 +144,12 @@ const Dashboard = ({ userName, onLogout }) => {
         try{
           if(selectedEmployee && modalType === 'edit') {
             //Update employee
-            const response = await axios.put(`${BASE_URL}/${selectedEmployee._id}`, newEmployee);
+            const response = await axios.put(`${BASE_URL}/users/${selectedEmployee._id}`, newEmployee);
             setEmployees(employees.map(emp => (emp._id === selectedEmployee._id ? response.data : emp)));
           } 
           else if(modalType === 'add') {
             //Add new employee
-            const response = await axios.post(BASE_URL, newEmployee);
+            const response = await axios.post(`${BASE_URL}/users`, newEmployee);
             setEmployees([...employees, response.data]);
           }
           handleCloseModal();
@@ -145,7 +160,7 @@ const Dashboard = ({ userName, onLogout }) => {
     } else if(modalType === 'message') {
       try{
         //Delete employee
-        await axios.delete(`${BASE_URL}/${selectedEmployee._id}`);
+        await axios.delete(`${BASE_URL}/users/${selectedEmployee._id}`);
         setEmployees(employees.filter(emp => emp._id !== selectedEmployee._id));
         handleCloseModal();
       } catch(error) {
@@ -199,14 +214,14 @@ const Dashboard = ({ userName, onLogout }) => {
               <h3 className="text-2xl">Payroll History</h3>
             </div>
             <div className="overflow-y-auto flex-grow scrollbar p-2" style={{ maxHeight: '220px' }}>
-              {filteredEmployees.map(employee => (
-                <div key={employee._id} className="flex justify-between items-center bg-gray-100 p-2 mb-3 rounded-xl shadow-md">
-                  <span>{employee.name}</span>
+              {payrollRecord.map((record) => (
+                <div key={record._id} className="flex justify-between items-center bg-gray-100 p-2 mb-3 rounded-xl shadow-md">
+                  <span>{record.periodEndDate}</span>
                   <div>
-                    <button onClick={() => handleDownloadExcel(employee)} className="px-3 py-2 rounded hover:bg-gray-200">
+                    <button onClick={() => handleDownloadExcel(record.fileName)} className="px-3 py-2 rounded hover:bg-gray-200">
                       <FontAwesomeIcon icon={faFileWord} />
                     </button>
-                    <button onClick={() => handleDownloadPdf(employee)} className="px-3 py-2 rounded hover:bg-gray-200">
+                    <button onClick={() => handleDownloadPdf(record.fileName)} className="px-3 py-2 rounded hover:bg-gray-200">
                       <FontAwesomeIcon icon={faFilePdf} />
                     </button>
                   </div>

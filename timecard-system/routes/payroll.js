@@ -62,6 +62,16 @@ app.post('/api/finalize-payroll', async (req, res) => {
       res.status(200).send({ message: 'Payroll finalized and archived successfully.' });
     });
 });
+
+app.get('/api/payroll-history', async (req, res) => {
+    try {
+      const payrollRecords = await PayrollHistory.find().sort({ periodEndDate: -1 }).exec();
+      res.status(200).json(payrollRecords);
+    } catch (error) {
+      res.status(500).send({ message: 'Error retrieving payroll history.' });
+    }
+});
+  
   
 
 model.exports = router;
