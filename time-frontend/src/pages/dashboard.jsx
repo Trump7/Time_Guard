@@ -70,6 +70,7 @@ const Dashboard = ({ userName, onLogout }) => {
     const fetchPayroll = async () => {
       try{
         const response = await axios.get(`${BASE_URL}/payroll/payroll-history`);
+        
         setPayrollRecord(response.data);
       } catch(error) {
         console.error('Error fetching Payroll history:', error);
@@ -83,9 +84,26 @@ const Dashboard = ({ userName, onLogout }) => {
     employee.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleDownloadExcel = (fileName) => {
-
+  const handleDownloadExcel = async (filePath) => {
+    try {
+      const response = await axios.get(`${BASE_URL}/payroll/download-excel`, {
+        params: { path: filePath },
+        responseType: 'blob',
+      });
+  
+      // Create a URL for the file blob and trigger a download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filePath.split('/').pop());
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error downloading Excel file:', error);
+    }
   };
+  
 
   const handleDownloadPdf = (fileName) => {
 
@@ -214,19 +232,24 @@ const Dashboard = ({ userName, onLogout }) => {
               <h3 className="text-2xl">Payroll History</h3>
             </div>
             <div className="overflow-y-auto flex-grow scrollbar p-2" style={{ maxHeight: '220px' }}>
-              {payrollRecord.map((record) => (
+              {payrollRecord.map((record) => {
+                const tempDate = new Date(record.periodEndDate);
+                const formattedEDate = tempDate.toLocaleDateString('en-US');
+                const formattedSDate = new Date(tempDate.setDate(tempDate.getDate() - 7)).toLocaleDateString('en-US');
+              return (
                 <div key={record._id} className="flex justify-between items-center bg-gray-100 p-2 mb-3 rounded-xl shadow-md">
-                  <span>{record.periodEndDate}</span>
+                  <span>{`${formattedSDate} to ${formattedEDate}`}</span>
                   <div>
-                    <button onClick={() => handleDownloadExcel(record.fileName)} className="px-3 py-2 rounded hover:bg-gray-200">
+                    <button onClick={() => handleDownloadExcel(record.filePath)} className="px-3 py-2 rounded hover:bg-gray-200">
                       <FontAwesomeIcon icon={faFileWord} />
                     </button>
-                    <button onClick={() => handleDownloadPdf(record.fileName)} className="px-3 py-2 rounded hover:bg-gray-200">
+                    <button onClick={() => handleDownloadPdf(record.filePath)} className="px-3 py-2 rounded hover:bg-gray-200">
                       <FontAwesomeIcon icon={faFilePdf} />
                     </button>
                   </div>
                 </div>
-              ))}
+              );
+            })}
             </div>
           </div>
           <div className="flex flex-col items-center justify-center flex-grow mb-4 mt-4">
