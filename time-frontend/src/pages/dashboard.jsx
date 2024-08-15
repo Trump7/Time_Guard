@@ -69,7 +69,7 @@ const Dashboard = ({ userName, onLogout }) => {
   useEffect(() => {
     const fetchPayroll = async () => {
       try{
-        const response = await axios.get(`${BASE_URL}/payroll-history`);
+        const response = await axios.get(`${BASE_URL}/payroll/payroll-history`);
         setPayrollRecord(response.data);
       } catch(error) {
         console.error('Error fetching Payroll history:', error);

@@ -14,6 +14,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api/users', require('./routes/users'));
+app.use('/api/payroll', require('./routes/payroll'));
 app.use('/api/clockin', require('./routes/clockin'));
 app.use('/api/clockout', require('./routes/clockout'));
 app.use('/api/checkmissedclockouts', require('./routes/checkmissedclockouts'));
