@@ -7,7 +7,7 @@ const PHistory = require('../models/PHistory');
 
 const { model } = require('mongoose');
 
-app.get('/download-excel/:fileName', (req, res) => {
+router.get('/download-excel/:fileName', (req, res) => {
     const fileName = req.params.fileName;
     const filePath = path.join(__dirname, 'payroll-files', fileName);
     res.download(filePath, fileName, (err) => {
@@ -17,7 +17,7 @@ app.get('/download-excel/:fileName', (req, res) => {
     });
 });
   
-app.get('/download-pdf/:fileName', async (req, res) => {
+router.get('/download-pdf/:fileName', async (req, res) => {
     const fileName = req.params.fileName;
     const filePath = path.join(__dirname, 'payroll-files', fileName);
 
@@ -31,7 +31,7 @@ app.get('/download-pdf/:fileName', async (req, res) => {
     });
 });
 
-app.post('/update-payroll', async (req, res) => {
+router.post('/update-payroll', async (req, res) => {
     const { updates } = req.body;
     const filePath = path.join(__dirname, 'payroll-files', 'current-payroll.xlsx');
     const workbook = new ExcelJS.Workbook();
@@ -50,7 +50,7 @@ app.post('/update-payroll', async (req, res) => {
     res.status(200).send({ message: 'Payroll updated successfully.' });
 });
   
-app.post('/finalize-payroll', async (req, res) => {
+router.post('/finalize-payroll', async (req, res) => {
     const { fileName } = req.body;
     const currentFilePath = path.join(__dirname, 'payroll-files', fileName);
     const archiveFilePath = path.join(__dirname, 'payroll-files', 'archive', fileName);
@@ -65,7 +65,7 @@ app.post('/finalize-payroll', async (req, res) => {
     });
 });
 
-app.get('/payroll-history', async (req, res) => {
+router.get('/payroll-history', async (req, res) => {
     try {
       const payrollRecords = await PHistory.find().sort({ periodEndDate: -1 }).exec();
       res.status(200).json(payrollRecords);
