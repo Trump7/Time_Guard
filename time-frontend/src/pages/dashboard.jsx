@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrashAlt, faFilePdf, faFileWord } from '@fortawesome/free-solid-svg-icons';
 import Header from '../components/Header';
 import InputField from '../components/InputField';
 import Modal from '../components/Modal';
@@ -19,7 +19,7 @@ const Dashboard = ({ userName, onLogout }) => {
   const [modalType, setModalType] = useState('');
   const [modalMessage, setModalMessage] = useState('');
   const [selectedEmployee, setSelectedEmployee] = useState(null);
-  const [newEmployee, setNewEmployee] = useState({ name: '', short: '', rfid: '' });
+  const [newEmployee, setNewEmployee] = useState({ name: '', short: '', rfid: '', row: '' });
   const [errors, setErrors] = useState({});
 
   const BASE_URL = 'http://192.168.1.122:3000/api/users';
@@ -68,9 +68,16 @@ const Dashboard = ({ userName, onLogout }) => {
     employee.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleDownloadExcel = (fileName) => {
+
+  };
+
+  const handleDownloadPdf = (fileName) => {
+
+  };
 
   const handleAddEmployeeClick = () => {
-    setNewEmployee({ name: '', short: '', rfid: '' });
+    setNewEmployee({ name: '', short: '', rfid: '', row: '' });
     setErrors({});
     setModalType('add');
     setIsModalOpen(true);
@@ -78,7 +85,7 @@ const Dashboard = ({ userName, onLogout }) => {
 
   const handleEditEmployeeClick = (employee) => {
     setSelectedEmployee(employee);
-    setNewEmployee({ name: employee.name, short: employee.short, rfid: employee.rfid });
+    setNewEmployee({ name: employee.name, short: employee.short, rfid: employee.rfid, row: employee.row });
     setErrors({});
     setModalType('edit');
     setIsModalOpen(true);
@@ -109,8 +116,12 @@ const Dashboard = ({ userName, onLogout }) => {
       if(!newEmployee.name) newErrors.name = 'Full Name is required';
       if(!newEmployee.rfid) newErrors.rfid = 'RFID Number is required';
       if(newEmployee.rfid.includes(' ')) newErrors.rfid = 'RFID Number should not contain spaces';
+      if(!newEmployee.row) newErrors.row = 'Row Number is required';
+      if(newEmployee.row.includes(' ')) newErrors.row = 'Row Number should not contain spaces';
       if(!newEmployee.short) newErrors.short = 'Short Name is required';
       if(newEmployee.short.length > 7) newErrors.short = 'Short Name should be at most 7 characters';
+      //check if rfid number is currently used
+      //check if row number is currently used
 
       setErrors(newErrors);
 
@@ -183,15 +194,32 @@ const Dashboard = ({ userName, onLogout }) => {
 
         {/* Middle Column */}
         <div className="flex flex-col justify-between items-center flex-grow min-w-[300px] max-w-[400px]">
-          <div className="flex bg-white p-6 rounded-3xl shadow-md w-full h-full min-h-[300px]">
-            <h3 className="text-2xl mb-4">Payroll History</h3>
+          <div className="flex flex-col bg-white p-6 rounded-3xl shadow-md w-full h-full min-h-[300px]">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-2xl">Payroll History</h3>
+            </div>
+            <div className="overflow-y-auto flex-grow scrollbar p-2" style={{ maxHeight: '220px' }}>
+              {filteredEmployees.map(employee => (
+                <div key={employee._id} className="flex justify-between items-center bg-gray-100 p-2 mb-3 rounded-xl shadow-md">
+                  <span>{employee.name}</span>
+                  <div>
+                    <button onClick={() => handleDownloadExcel(employee)} className="px-3 py-2 rounded hover:bg-gray-200">
+                      <FontAwesomeIcon icon={faFileWord} />
+                    </button>
+                    <button onClick={() => handleDownloadPdf(employee)} className="px-3 py-2 rounded hover:bg-gray-200">
+                      <FontAwesomeIcon icon={faFilePdf} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
           <div className="flex flex-col items-center justify-center flex-grow mb-4 mt-4">
           <p className="text-md">Last Updated</p>
             <p className="text-4xl">{formattedTime}</p>
             <p className="text-4xl">{formattedDate}</p>
           </div>
-          <div className="flex bg-white p-6 rounded-3xl shadow-md w-full h-full min-h-[300px]">
+          <div className="flex bg-white p-6 rounded-3xl shadow-md w-full h-full min-h-[275px]">
             <h3 className="text-2xl mb-4">Export / Edit</h3>
           </div>
         </div>
@@ -232,7 +260,8 @@ const Dashboard = ({ userName, onLogout }) => {
         fields={[
           { name: 'name', type: 'text', placeholder: 'Full Name' },
           { name: 'short', type: 'text', placeholder: 'Short Name' },
-          { name: 'rfid', type: 'text', placeholder: 'RFID Number' }
+          { name: 'rfid', type: 'text', placeholder: 'RFID Number' },
+          { name: 'row', type: 'text', placeholder: 'Payroll Row Number'}
         ]}
         modalType={modalType}
         message={modalMessage}
