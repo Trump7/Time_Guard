@@ -16,6 +16,7 @@ const Dashboard = ({ userName, onLogout }) => {
   const [payrollRecord, setPayrollRecord] = useState([]);
   const [liveUpdates, setLiveUpdates] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [liveSearchTerm, setLiveSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('');
   const [modalMessage, setModalMessage] = useState('');
@@ -82,6 +83,10 @@ const Dashboard = ({ userName, onLogout }) => {
 
   const filteredEmployees = employees.filter(employee =>
     employee.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredUpdates = liveUpdates.filter(liveUpdates =>
+    liveUpdates.name.toLowerCase().includes(liveSearchTerm.toLowerCase())
   );
 
   const handleDownloadExcel = async (filePath) => {
@@ -264,9 +269,15 @@ const Dashboard = ({ userName, onLogout }) => {
 
         {/* Live Updates Box */}
         <div className="flex flex-col bg-white p-6 rounded-3xl shadow-md min-w-[300px] max-w-[400px] min-h-[710px] flex-grow">
-          <h3 className="text-2xl mb-4">Recent Updates</h3>
+          <h3 className="text-2xl mb-8">Recent Updates</h3>
+          <InputField
+            type="text"
+            placeholder="Search..."
+            value={liveSearchTerm}
+            onChange={(e) => setLiveSearchTerm(e.target.value)}
+          />
           <div className="overflow-y-auto flex-grow scrollbar p-2" style={{ maxHeight: '600px' }}>
-            {liveUpdates.map(update => (
+            {filteredUpdates.map(update => (
               <div key={update.id} className="flex flex-col bg-gray-100 p-2 mb-3 rounded-xl shadow-md">
                 <div className="flex justify-between">
                   <span>{update.name}</span>
