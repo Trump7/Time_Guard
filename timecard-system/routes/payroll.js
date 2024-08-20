@@ -145,7 +145,7 @@ router.post('/finalize-payroll', async (req, res) => {
             return res.status(404).send({ message: 'No active payroll found to finalize.' });
         }
 
-        const newFileName = payrollEntry.periodEndDate;
+        const newFileName = new Date(payrollEntry.periodEndDate).toISOString().split('T')[0];
         const newFilePath = path.join(payrollFileDir, `${newFileName}.xlsx`);
 
         //Rename the file
