@@ -72,9 +72,9 @@ router.post('/initial-fill', async (req, res) => {
 
         const formatDate = date => date.toLocaleDateString('en-US');
 
-        worksheet.getRow(1).getCell(11).value = formatDate(dates.periodEndDate); //PeriodEndDate (always tuesday)
-        worksheet.getRow(2).getCell(11).value = formatDate(dates.payDate); //Pay (that friday)
-        worksheet.getRow(3).getCell(11).value = formatDate(dates.runDate); //Run (that wednesday)
+        worksheet.getRow(1).getCell(11).value = formatDate(periodEndDate); //PeriodEndDate (always tuesday)
+        worksheet.getRow(2).getCell(11).value = formatDate(payDate); //Pay (that friday)
+        worksheet.getRow(3).getCell(11).value = formatDate(runDate); //Run (that wednesday)
 
         //get all user info
         const users = await User.find();
