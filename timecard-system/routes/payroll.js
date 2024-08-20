@@ -19,17 +19,36 @@ router.get('/download-excel', (req, res) => {
     });
 });
 
-router.post('/copy-template', (req, res) => {
+router.post('/copy-template', async (req, res) => {
     const templatePath = path.join(payrollFileDir, 'Template.xlsx');
     const destinationPath = path.join(payrollFileDir, 'Current-Payroll.xlsx');
 
-    fs.copyFile(templatePath, destinationPath, (err) => {
+    const today = new Date();
+    const formattedDate = today.toISOString().split('T')[0]; //Format date as 'YYYY-MM-DD'
+
+    fs.copyFile(templatePath, destinationPath, async (err) => {
         if(err){
             console.error('Error copying template file:', err);
             return res.status(500).send({message: 'Error copying template file'});
         }
         console.log('Template file copied successfully!');
-        res.status(200).send({ message: 'Template file copied successfully'});
+
+        try{
+            const newPayroll = new PHistory({
+                fileName: 'Current-Payroll.xlsx',
+                periodEndDate: formattedDate, //fill out now
+                filePath: destinationPath,
+                isFinal: false
+            });
+
+            await newPayroll.save();
+            console.log('New Payroll entry created');
+            res.status(200).send({ message: 'Payroll entry created'});
+        }
+        catch(error){
+            console.error('Error updating database: ', error);
+            return res.status(500).send({message: 'Error updating database'});
+        }
     });
 });
 
@@ -42,15 +61,34 @@ router.post('/initial-fill', async (req, res) => {
         await workbook.xlsx.readFile(currentPath);
         const worksheet = workbook.getWorksheet(1);
 
+        //Update date information in format MM/DD/YYYY
+        const periodEndDate = new Date();
+        const dates = {
+            periodEndDate,
+            payDate: new Date(periodEndDate.setDate(periodEndDate.getDate() + 3)),
+            runDate: new Date(periodEndDate.setDate(periodEndDate.getDate() + 1))
+        };
+
+        const formatDate = date => date.toLocaleDateString('en-US');
+
+        worksheet.getRow(1).getCell(11).value = formatDate(dates.periodEndDate); //PeriodEndDate (always tuesday)
+        worksheet.getRow(2).getCell(11).value = formatDate(dates.payDate); //Pay (that friday)
+        worksheet.getRow(3).getCell(11).value = formatDate(dates.runDate); //Run (that wednesday)
+
         //get all user info
         const users = await User.find();
+        const grandTotal = 0;
 
         //go through each user and update their row
         users.forEach(user => {
-            const row = worSheet.getRow(user.row); //getting users row number
+            const row = worksheet.getRow(user.row); //getting users row number
             row.getCell(3).value = user.totalHours; //fill total hours to hours cell
+            grandTotal += user.totalHours;
             row.commit();
         });
+
+        //update total (this value may change if more employees are added)
+        worksheet.getRow(25).getCell(3).value = grandTotal;
 
         await workbook.xlsx.writeFile(currentPath);
         console.log('Initial hours transfered');
@@ -62,16 +100,16 @@ router.post('/initial-fill', async (req, res) => {
     }
 });
   
-// router.get('/download-pdf/:fileName', async (req, res) => {
-//     const fileName = req.params.fileName;
-//     const filePath = path.join(__dirname, 'payroll-files', fileName);
+//router.get('/download-pdf/:fileName', async (req, res) => {
+//    const fileName = req.params.fileName;
+//    const filePath = path.join(__dirname, 'payroll-files', fileName);
 
-//     res.download(pdfFilePath, pdfFileName, (err) => {
-//         if (err) {
-//             res.status(500).send({ message: 'Error downloading PDF file.' });
-//         }
-//     });
-// });
+//    res.download(pdfFilePath, pdfFileName, (err) => {
+//        if (err) {
+//            res.status(500).send({ message: 'Error downloading PDF file.' });
+//        }
+//    });
+//});
 
 router.post('/update-payroll', async (req, res) => {
     const { updates } = req.body;
@@ -92,16 +130,38 @@ router.post('/update-payroll', async (req, res) => {
 });
   
 router.post('/finalize-payroll', async (req, res) => {
-    const { fileName } = req.body;
-    const currentFilePath = path.join(__dirname, 'payroll-files', fileName);
-    const archiveFilePath = path.join(__dirname, 'payroll-files', 'archive', fileName);
+    const currentFilePath = path.join(payrollFilesDir, 'Current-Payroll.xlsx');
     
-    fs.rename(currentFilePath, archiveFilePath, (err) => {
-        if (err) {
-            return res.status(500).send({ message: 'Error finalizing payroll.' });
+    //Get the current date
+    try{
+        const payrollEntry = await PHistory.findOne({ fileName: 'Current-Payroll.xlsx', isFinal: false});
+        if(!payrollEntry){
+            return res.status(404).send({ message: 'No active payroll found to finalize.' });
         }
-        res.status(200).send({ message: 'Payroll finalized and archived successfully.' });
-    });
+
+        const newFileName = payrollEntry.periodEndDate;
+        const newFilePath = path.join(payrollFilesDir, `${newFileName}.xlsx`);
+
+        //Rename the file
+        fs.rename(currentFilePath, newFilePath, async (err) => {
+            if (err) {
+                console.error('Error finalizing payroll:', err);
+                return res.status(500).send({ message: 'Error finalizing payroll.' });
+            }
+
+            payrollEntry.fileName = `${newFileName}.xlsx`;
+            payrollEntry.filePath = newFilePath;
+            payrollEntry.isFinal = true;
+            await payrollEntry.save();
+
+            console.log(`Payroll finalized and renamed to ${formattedDate}.xlsx`);
+            res.status(200).send({ message: `Payroll finalized and renamed to ${formattedDate}.xlsx` });
+        });
+    }
+    catch(error){
+        console.error('Error during finalization:', error);
+        res.status(500).send({message: 'Failed to finalize data'});
+    } 
 });
 
 router.get('/payroll-history', async (req, res) => {
