@@ -77,7 +77,7 @@ router.post('/initial-fill', async (req, res) => {
 
         //get all user info
         const users = await User.find();
-        const grandTotal = 0;
+        let grandTotal = 0;
 
         //go through each user and update their row
         users.forEach(user => {
@@ -130,7 +130,7 @@ router.post('/update-payroll', async (req, res) => {
 });
   
 router.post('/finalize-payroll', async (req, res) => {
-    const currentFilePath = path.join(payrollFilesDir, 'Current-Payroll.xlsx');
+    const currentFilePath = path.join(payrollFileDir, 'Current-Payroll.xlsx');
     
     //Get the current date
     try{
