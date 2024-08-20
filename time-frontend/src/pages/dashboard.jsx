@@ -93,17 +93,24 @@ const Dashboard = ({ userName, onLogout }) => {
         const response = await axios.get(`${BASE_URL}/payroll/current-payroll`);
         const payroll = response.data;
 
-        if(payroll){
-          const periodEndDate = new Date(payroll.periodEndDate);
-          const previousWed = new Date(periodEndDate);
-          previousWed.setDate(periodEndDate.getDate() - ((periodEndDate.getDay() + 4) % 7) - 1);
+        if(payroll && payroll.length > 0){
+          const periodEndDate = new Date(payroll[0].periodEndDate);
+                
+          const periodStartDate = new Date(Date.UTC(periodEndDate.getUTCFullYear(), periodEndDate.getUTCMonth(), periodEndDate.getUTCDate()));
+          periodStartDate.setUTCDate(periodStartDate.getUTCDate() - ((periodStartDate.getUTCDay() + 4) % 7));
 
+          const formattedEndDate = periodEndDate.toLocaleDateString('en-US', { timeZone: 'UTC' });
+          const formattedStartDate = periodStartDate.toLocaleDateString('en-US', { timeZone: 'UTC' });
+          
           setCurrentPayroll(payroll);
-          setPayrollMessage(`Payroll for ${previousWed.toLocaleDateString('en-US')} to ${periodEndDate.toLocaleDateString('en-US')}`);
+          setPayrollMessage(`Payroll for ${formattedStartDate} to ${formattedEndDate}`);
           setPayrollStatus('Pending');
         }
-        setPayrollMessage('There is no new Payroll sheet to edit.');
-        setPayrollStatus('Completed');
+        else{
+          setCurrentPayroll(null);
+          setPayrollMessage('There is no new Payroll sheet to edit.');
+          setPayrollStatus('Completed');
+        }
         
       } catch(error) {
         console.error('Error fetching Payroll data:', error);
@@ -112,7 +119,7 @@ const Dashboard = ({ userName, onLogout }) => {
     };
 
     fetchCurrentPayroll();
-  }, []);
+  }, [liveUpdates]);
 
   const filteredEmployees = employees.filter(employee =>
     employee.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -145,6 +152,14 @@ const Dashboard = ({ userName, onLogout }) => {
 
   const handleDownloadPdf = (fileName) => {
 
+  };
+
+  const handleEditClick = () => {
+    
+  };
+
+  const handleFinalizeClick = () => {
+    
   };
 
   const handleAddEmployeeClick = () => {
@@ -295,15 +310,18 @@ const Dashboard = ({ userName, onLogout }) => {
             <p className="text-4xl">{formattedTime}</p>
             <p className="text-4xl">{formattedDate}</p>
           </div>
-          <div className="flex bg-white p-6 rounded-3xl shadow-md w-full h-full min-h-[275px]">
-            <h3 className="text-2xl mb-4">Export / Edit</h3>
-            <p>{payrollMessage}</p>
-            {currentPayroll && (
-                <>
-                    <button onClick={() => handleEditClick()} className="edit-button">Edit Payroll Document</button>
-                    <button onClick={() => handleFinalizeClick()} className="finalize-button">Edit Payroll Document</button>
-                </>
-            )}
+          <div className="flex flex-col bg-white p-6 rounded-3xl shadow-md w-full h-full min-h-[275px]">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-2xl">Export / Edit</h3>
+            </div>
+            <p className="text-center mb-6">{payrollMessage}</p>
+            
+              {currentPayroll && (
+                  <div className="flex flex-col items-center space-y-4">
+                      <button onClick={handleEditClick} className="bg-button-color rounded-3xl text-black w-3/5 py-2 mb-6 shadow-md hover:bg-button-hover">Edit Current Document</button>
+                      <button onClick={handleFinalizeClick} className="bg-button-color rounded-3xl text-black w-3/5 py-2 shadow-md hover:bg-button-hover">Finalize Payroll</button>
+                  </div>
+              )}
           </div>
         </div>
 
