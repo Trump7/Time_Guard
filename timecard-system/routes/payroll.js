@@ -12,7 +12,9 @@ const payrollFileDir = path.join(__dirname, '..', 'Payroll-Files');
 
 router.get('/download-excel', (req, res) => {
     const filePath = req.query.path;
-    res.download(filePath, (err) => {
+    const fileName = path.basename(filePath);
+
+    res.download(filePath, fileName, (err) => {
         if (err) {
             res.status(500).send({ message: 'Error downloading file.' });
         }
@@ -64,10 +66,13 @@ router.post('/initial-fill', async (req, res) => {
         //Update date information in format MM/DD/YYYY
         const periodEndDate = new Date();
         const dates = {
-            periodEndDate,
-            payDate: new Date(periodEndDate.setDate(periodEndDate.getDate() + 3)),
-            runDate: new Date(periodEndDate.setDate(periodEndDate.getDate() + 1))
+            periodEndDate: new Date(periodEndDate),
+            payDate: new Date(periodEndDate),
+            runDate: new Date(periodEndDate)
         };
+
+        dates.payDate.setDate(periodEndDate.getDate() + 3);
+        dates.payDate.setDate(periodEndDate.getDate() + 1);
 
         const formatDate = date => date.toLocaleDateString('en-US');
 
@@ -78,17 +83,18 @@ router.post('/initial-fill', async (req, res) => {
         //get all user info
         const users = await User.find();
         let grandTotal = 0;
+        const roundUp = (num) => Math.ceil(num * 100) / 100;
 
         //go through each user and update their row
         users.forEach(user => {
             const row = worksheet.getRow(user.row); //getting users row number
-            row.getCell(3).value = user.totalHours; //fill total hours to hours cell
-            grandTotal += user.totalHours;
+            row.getCell(3).value = roundUp(user.totalHours); //fill total hours to hours cell
+            grandTotal += roundUp(user.totalHours);
             row.commit();
         });
 
         //update total (this value may change if more employees are added)
-        worksheet.getRow(25).getCell(3).value = grandTotal;
+        worksheet.getRow(25).getCell(3).value = roundUp(grandTotal);
 
         await workbook.xlsx.writeFile(currentPath);
         console.log('Initial hours transfered');
@@ -140,7 +146,7 @@ router.post('/finalize-payroll', async (req, res) => {
         }
 
         const newFileName = payrollEntry.periodEndDate;
-        const newFilePath = path.join(payrollFilesDir, `${newFileName}.xlsx`);
+        const newFilePath = path.join(payrollFileDir, `${newFileName}.xlsx`);
 
         //Rename the file
         fs.rename(currentFilePath, newFilePath, async (err) => {
@@ -154,8 +160,8 @@ router.post('/finalize-payroll', async (req, res) => {
             payrollEntry.isFinal = true;
             await payrollEntry.save();
 
-            console.log(`Payroll finalized and renamed to ${formattedDate}.xlsx`);
-            res.status(200).send({ message: `Payroll finalized and renamed to ${formattedDate}.xlsx` });
+            console.log(`Payroll finalized and renamed to ${newFileName}.xlsx`);
+            res.status(200).send({ message: `Payroll finalized and renamed to ${newFileName}.xlsx` });
         });
     }
     catch(error){
