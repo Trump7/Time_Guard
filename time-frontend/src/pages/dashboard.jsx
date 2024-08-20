@@ -159,7 +159,9 @@ const Dashboard = ({ userName, onLogout }) => {
   };
 
   const handleFinalizeClick = () => {
-    
+    setModalMessage('Are you sure you would like to finalize this Payroll Worksheet? This will remove the ability to edit this sheet through the website. Once done, this cannot be undone and the file must be downloaded via the Payroll History section to edit.');
+    setModalType('message');
+    setIsModalOpen(true);
   };
 
   const handleAddEmployeeClick = () => {
@@ -229,14 +231,22 @@ const Dashboard = ({ userName, onLogout }) => {
         }
       }
     } else if(modalType === 'message') {
-      try{
-        //Delete employee
-        await axios.delete(`${BASE_URL}/users/${selectedEmployee._id}`);
-        setEmployees(employees.filter(emp => emp._id !== selectedEmployee._id));
-        handleCloseModal();
-      } catch(error) {
-        console.error('Error deleting employee:', error);
-      }
+        if(selectedEmployee){
+          try{
+            //Delete employee
+            await axios.delete(`${BASE_URL}/users/${selectedEmployee._id}`);
+            setEmployees(employees.filter(emp => emp._id !== selectedEmployee._id));
+            handleCloseModal();
+          } catch(error) {
+            console.error('Error deleting employee:', error);
+          }
+        }
+        else{
+          await axios.post(`${BASE_URL}/payroll/finalize-payroll`);
+          setCurrentPayroll(null);
+          handleCloseModal();
+        }
+        
     }
   };
 
