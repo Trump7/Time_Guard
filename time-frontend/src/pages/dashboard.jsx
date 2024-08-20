@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrashAlt, faFilePdf, faFileWord } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrashAlt, faFilePdf, faFileExcel } from '@fortawesome/free-solid-svg-icons';
 import Header from '../components/Header';
 import InputField from '../components/InputField';
 import Modal from '../components/Modal';
@@ -231,7 +231,7 @@ const Dashboard = ({ userName, onLogout }) => {
         </div>
 
         {/* Middle Column */}
-        <div className="flex flex-col justify-between items-center flex-grow min-w-[300px] max-w-[400px]">
+        <div className="flex flex-col justify-between items-center flex-grow min-w-[350px] max-w-[400px]">
           <div className="flex flex-col bg-white p-6 rounded-3xl shadow-md w-full h-full min-h-[300px]">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-2xl">Payroll History</h3>
@@ -245,10 +245,10 @@ const Dashboard = ({ userName, onLogout }) => {
                 <div key={record._id} className="flex justify-between items-center bg-gray-100 p-2 mb-3 rounded-xl shadow-md">
                   <span>{`${formattedSDate} to ${formattedEDate}`}</span>
                   <div>
-                    <button onClick={() => handleDownloadExcel(record.filePath)} className="px-3 py-2 rounded hover:bg-gray-200">
-                      <FontAwesomeIcon icon={faFileWord} />
+                    <button onClick={() => handleDownloadExcel(record.filePath)} className="px-3 py-2 rounded hover:bg-gray-200" title="Download as Excel Document">
+                      <FontAwesomeIcon icon={faFileExcel} />
                     </button>
-                    <button onClick={() => handleDownloadPdf(record.filePath)} className="px-3 py-2 rounded hover:bg-gray-200">
+                    <button onClick={() => handleDownloadPdf(record.filePath)} className="px-3 py-2 rounded hover:bg-gray-200" title="Download as PDF Document">
                       <FontAwesomeIcon icon={faFilePdf} />
                     </button>
                   </div>
