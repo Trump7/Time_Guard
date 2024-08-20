@@ -14,6 +14,11 @@ const Dashboard = ({ userName, onLogout }) => {
 
   const [employees, setEmployees] = useState([]);
   const [payrollRecord, setPayrollRecord] = useState([]);
+
+  const [currentPayroll, setCurrentPayroll] = useState(null);
+  const [payrollStatus, setPayrollStatus] = useState('');
+  const [payrollMessage, setPayrollMessage] = useState('');
+
   const [liveUpdates, setLiveUpdates] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [liveSearchTerm, setLiveSearchTerm] = useState('');
@@ -80,6 +85,34 @@ const Dashboard = ({ userName, onLogout }) => {
 
     fetchPayroll();
   }, [liveUpdates]);
+
+
+  useEffect(() => {
+    const fetchCurrentPayroll = async () => {
+      try{
+        const response = await axios.get(`${BASE_URL}/payroll/current-payroll`);
+        const payroll = response.data;
+
+        if(payroll){
+          const periodEndDate = new Date(payroll.periodEndDate);
+          const previousWed = new Date(periodEndDate);
+          previousWed.setDate(periodEndDate.getDate() - ((periodEndDate.getDay() + 4) % 7) - 1);
+
+          setCurrentPayroll(payroll);
+          setPayrollMessage(`Payroll for ${previousWed.toLocaleDateString('en-US')} to ${periodEndDate.toLocaleDateString('en-US')}`);
+          setPayrollStatus('Pending');
+        }
+        setPayrollMessage('There is no new Payroll sheet to edit.');
+        setPayrollStatus('Completed');
+        
+      } catch(error) {
+        console.error('Error fetching Payroll data:', error);
+        setPayrollMessage('Error fetching payroll data');
+      }
+    };
+
+    fetchCurrentPayroll();
+  }, []);
 
   const filteredEmployees = employees.filter(employee =>
     employee.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -264,6 +297,13 @@ const Dashboard = ({ userName, onLogout }) => {
           </div>
           <div className="flex bg-white p-6 rounded-3xl shadow-md w-full h-full min-h-[275px]">
             <h3 className="text-2xl mb-4">Export / Edit</h3>
+            <p>{payrollMessage}</p>
+            {currentPayroll && (
+                <>
+                    <button onClick={() => handleEditClick()} className="edit-button">Edit Payroll Document</button>
+                    <button onClick={() => handleFinalizeClick()} className="finalize-button">Edit Payroll Document</button>
+                </>
+            )}
           </div>
         </div>
 

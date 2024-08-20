@@ -166,6 +166,16 @@ router.post('/finalize-payroll', async (req, res) => {
     } 
 });
 
+router.get('/current-payroll', async (req, res) => {
+    try {
+        const payroll = await PHistory.find({isFinal: false}).sort({ periodEndDate: -1 });
+        res.status(200).json(payroll);
+    } catch (error) {
+        console.error('Error fetching current payroll:', error);
+        res.status(500).send({ message: 'Error retrieving current payroll.' });
+    }
+});
+
 router.get('/payroll-history', async (req, res) => {
     try {
         const payrollRecords = await PHistory.find({isFinal: true}).sort({ periodEndDate: -1 }).exec();
