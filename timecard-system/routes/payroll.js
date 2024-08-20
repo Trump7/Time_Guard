@@ -8,6 +8,8 @@ const Account = require('../models/Account');
 const Timecard = require('../models/Timecard');
 const PHistory = require('../models/PHistory');
 
+const payrollFileDir = path.join(__dirname, '..', 'Payroll-Files');
+
 router.get('/download-excel', (req, res) => {
     const filePath = req.query.path;
     res.download(filePath, (err) => {
@@ -18,8 +20,8 @@ router.get('/download-excel', (req, res) => {
 });
 
 router.post('/copy-template', (req, res) => {
-    const templatePath = path.join(__dirname, 'payroll-files', 'Template.xlsx');
-    const destinationPath = path.join(__dirname, 'payroll-files', 'Current-Payroll.xlsx');
+    const templatePath = path.join(payrollFileDir, 'Template.xlsx');
+    const destinationPath = path.join(payrollFileDir, 'Current-Payroll.xlsx');
 
     fs.copyFile(templatePath, destinationPath, (err) => {
         if(err){
@@ -32,7 +34,7 @@ router.post('/copy-template', (req, res) => {
 });
 
 router.post('/initial-fill', async (req, res) => {
-    const currentPath = path.join(__dirname, 'payroll-files', 'Current-Payroll.xlsx');
+    const currentPath = path.join(payrollFileDir, 'Current-Payroll.xlsx');
     const workbook = new ExcelJS.Workbook();
 
     try {
