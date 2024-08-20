@@ -65,14 +65,10 @@ router.post('/initial-fill', async (req, res) => {
 
         //Update date information in format MM/DD/YYYY
         const periodEndDate = new Date();
-        const dates = {
-            periodEndDate: new Date(periodEndDate),
-            payDate: new Date(periodEndDate),
-            runDate: new Date(periodEndDate)
-        };
-
-        dates.payDate.setDate(periodEndDate.getDate() + 3);
-        dates.payDate.setDate(periodEndDate.getDate() + 1);
+        const payDate = new Date(periodEndDate);
+        payDate.setDate(periodEndDate.getDate() + 3);
+        const runDate = new Date(periodEndDate);
+        runDate.setDate(periodEndDate.getDate() + 1);
 
         const formatDate = date => date.toLocaleDateString('en-US');
 
