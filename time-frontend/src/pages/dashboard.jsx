@@ -245,6 +245,7 @@ const Dashboard = ({ userName, onLogout }) => {
           await axios.post(`${BASE_URL}/payroll/finalize-payroll`);
           setCurrentPayroll(null);
           handleCloseModal();
+          window.location.reload();
         }
         
     }
