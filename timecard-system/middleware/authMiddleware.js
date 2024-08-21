@@ -20,7 +20,7 @@ const verifyToken = (req, res, next) => {
 // Middleware to check admin role
 const checkAdmin = async (req, res, next) => {
     try {
-        const admin = await Account.findById(req.user._id);
+        const admin = await Account.findById(req.user.id);
         if (admin) {
             next();
         } else {

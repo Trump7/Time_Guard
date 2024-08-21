@@ -12,7 +12,7 @@ connectDB();
 
 //middleware
 app.use(cors({
-    origin: 'http://192.168.1.122:80',
+    origin: 'http://192.168.1.122',
     credentials: true,
 }));
 app.use(cookieParser());
