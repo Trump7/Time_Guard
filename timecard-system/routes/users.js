@@ -15,7 +15,7 @@ router.post('/', verifyToken, checkAdmin, async(req, res) => {
         res.send(user);
         console.log('A new user has been created!');
     }
-    catch{
+    catch(error){
         console.log('User could not be created');
         res.status(400).send(error);
     }
