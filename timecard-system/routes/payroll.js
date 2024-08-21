@@ -4,13 +4,12 @@ const path = require('path');
 const ExcelJS = require('exceljs');
 const router = express.Router();
 const User = require('../models/User');
-const Account = require('../models/Account');
-const Timecard = require('../models/Timecard');
 const PHistory = require('../models/PHistory');
+const { verifyToken, checkAdmin, verifyDeviceToken } = require('../middleware/authMiddleware');
 
 const payrollFileDir = path.join(__dirname, '..', 'Payroll-Files');
 
-router.get('/download-excel', (req, res) => {
+router.get('/download-excel', verifyToken, checkAdmin, (req, res) => {
     const filePath = req.query.path;
     const fileName = path.basename(filePath);
 
@@ -21,7 +20,8 @@ router.get('/download-excel', (req, res) => {
     });
 });
 
-router.post('/copy-template', async (req, res) => {
+//For Arduino
+router.post('/copy-template', verifyDeviceToken , async (req, res) => {
     const templatePath = path.join(payrollFileDir, 'Template.xlsx');
     const destinationPath = path.join(payrollFileDir, 'Current-Payroll.xlsx');
 
@@ -54,7 +54,8 @@ router.post('/copy-template', async (req, res) => {
     });
 });
 
-router.post('/initial-fill', async (req, res) => {
+//For Arduino
+router.post('/initial-fill', verifyDeviceToken , async (req, res) => {
     const currentPath = path.join(payrollFileDir, 'Current-Payroll.xlsx');
     const workbook = new ExcelJS.Workbook();
 
@@ -81,7 +82,7 @@ router.post('/initial-fill', async (req, res) => {
         let grandTotal = 0;
         const roundUp = (num) => Math.ceil(num * 100) / 100;
 
-        //go through each user and update their row
+        //go through each user and update their row on excel
         users.forEach(user => {
             const row = worksheet.getRow(user.row); //getting users row number
             row.getCell(3).value = roundUp(user.totalHours); //fill total hours to hours cell
@@ -113,7 +114,7 @@ router.post('/initial-fill', async (req, res) => {
 //    });
 //});
 
-router.post('/update-payroll', async (req, res) => {
+router.post('/update-payroll', verifyToken, checkAdmin, async (req, res) => {
     const { updates } = req.body;
     const filePath = path.join(__dirname, 'payroll-files', 'current-payroll.xlsx');
     const workbook = new ExcelJS.Workbook();
@@ -131,7 +132,7 @@ router.post('/update-payroll', async (req, res) => {
     res.status(200).send({ message: 'Payroll updated successfully.' });
 });
   
-router.post('/finalize-payroll', async (req, res) => {
+router.post('/finalize-payroll', verifyToken, checkAdmin, async (req, res) => {
     const currentFilePath = path.join(payrollFileDir, 'Current-Payroll.xlsx');
     
     //Get the current date
@@ -166,7 +167,7 @@ router.post('/finalize-payroll', async (req, res) => {
     } 
 });
 
-router.get('/current-payroll', async (req, res) => {
+router.get('/current-payroll', verifyToken, checkAdmin, async (req, res) => {
     try {
         const payroll = await PHistory.find({isFinal: false}).sort({ periodEndDate: -1 });
         res.status(200).json(payroll);
@@ -176,7 +177,7 @@ router.get('/current-payroll', async (req, res) => {
     }
 });
 
-router.get('/payroll-history', async (req, res) => {
+router.get('/payroll-history', verifyToken, checkAdmin, async (req, res) => {
     try {
         const payrollRecords = await PHistory.find({isFinal: true}).sort({ periodEndDate: -1 }).exec();
         res.status(200).json(payrollRecords);

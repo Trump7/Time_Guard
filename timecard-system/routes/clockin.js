@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const Timecard = require('../models/Timecard');
+const { verifyDeviceToken } = require('../middleware/authMiddleware');
 
-
-router.post('/', async(req, res) => {
+//Function for Arduino
+router.post('/', verifyDeviceToken, async(req, res) => {
     const {rfid} = req.body;
     const user = await User.findOne({ rfid });
     if(user){

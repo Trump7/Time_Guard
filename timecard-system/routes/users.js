@@ -5,9 +5,10 @@ const Account = require('../models/Account');
 const Timecard = require('../models/Timecard');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { verifyToken, checkAdmin, verifyDeviceToken } = require('../middleware/authMiddleware');
 
 //add a new user
-router.post('/', async(req, res) => {
+router.post('/', verifyToken, checkAdmin, async(req, res) => {
     const user = new User(req.body);
     try{
         await user.save();
@@ -21,7 +22,7 @@ router.post('/', async(req, res) => {
 });
 
 //get all current users
-router.get('/', async (req, res) => {
+router.get('/', verifyToken, checkAdmin, async (req, res) => {
     try {
       const users = await User.find();
       res.send(users);
@@ -32,7 +33,7 @@ router.get('/', async (req, res) => {
 });
 
 //get all history entries
-router.get('/history', async (req, res) => {
+router.get('/history', verifyToken, checkAdmin, async (req, res) => {
     try {
       const history = await Timecard.find();
       res.send(history);
@@ -42,8 +43,8 @@ router.get('/history', async (req, res) => {
     }
 });
   
-
-router.post('/validate', async(req, res) => {
+//This API is for the Arduino Device
+router.post('/validate', verifyDeviceToken, async(req, res) => {
     const {rfid} = req.body;
     try{
         const user = await User.findOne({rfid});
@@ -64,7 +65,7 @@ router.post('/validate', async(req, res) => {
 });
 
 // Edit user
-router.put('/:id', async(req, res) => {
+router.put('/:id', verifyToken, checkAdmin, async(req, res) => {
     try {
         const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!user) {
@@ -78,8 +79,23 @@ router.put('/:id', async(req, res) => {
     }
 });
 
+// Reset user's times
+// router.put('/:id', verifyToken, checkAdmin, async(req, res) => {
+//     try {
+//         const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+//         if (!user) {
+//             return res.status(404).send('User not found');
+//         }
+//         res.send(user);
+//         console.log(`User ${user.name} has been updated!`);
+//     } catch (error) {
+//         console.log('User could not be updated');
+//         res.status(400).send(error);
+//     }
+// });
+
 // Delete user
-router.delete('/:id', async(req, res) => {
+router.delete('/:id', verifyToken, checkAdmin, async(req, res) => {
     try {
         const user = await User.findByIdAndDelete(req.params.id);
         if (!user) {
@@ -94,7 +110,7 @@ router.delete('/:id', async(req, res) => {
 });
 
 // Fetch user by ID
-router.get('/:id', async(req, res) => {
+router.get('/:id', verifyToken, checkAdmin, async(req, res) => {
     try {
         const user = await User.findById(req.params.id);
         if (!user) {
