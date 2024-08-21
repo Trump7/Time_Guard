@@ -5,6 +5,7 @@ import { faEdit, faTrashAlt, faFilePdf, faFileExcel } from '@fortawesome/free-so
 import Header from '../components/Header';
 import InputField from '../components/InputField';
 import Modal from '../components/Modal';
+import TableExcel from '../components/TableExcel';
 import '../components/customScrollbar.css';
 
 const Dashboard = ({ userName, onLogout }) => {
@@ -18,6 +19,9 @@ const Dashboard = ({ userName, onLogout }) => {
   const [currentPayroll, setCurrentPayroll] = useState(null);
   const [payrollStatus, setPayrollStatus] = useState('');
   const [payrollMessage, setPayrollMessage] = useState('');
+
+  const [isTableOpen, setTableOpen] = useState(false);
+  const [payrollData, setPayrollData] = useState([]);
 
   const [liveUpdates, setLiveUpdates] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -155,9 +159,26 @@ const Dashboard = ({ userName, onLogout }) => {
 
   };
 
-  const handleEditClick = () => {
-    
+  const handleEditClick = async () => {
+    try{
+      // const response = await axios.get(`${BASE_URL}/payroll/get-payroll-data`, {withCredentials: true,});
+      // setPayrollData(response.data);
+      setTableOpen(true);
+    }
+    catch(error){
+      console.error('Error fetching payroll data: ', error);
+    }
   };
+
+  const handleEditSave = async (updatedData) => {
+    try {
+      await axios.put(`${BASE_URL}/payroll/update-payroll`, updatedData, {withCredentials: true});
+      console.log('Payroll updated!');
+    }
+    catch(error){
+      console.error("Error updating payroll: ", error);
+    }
+  }
 
   const handleFinalizeClick = () => {
     setModalMessage('Are you sure you would like to finalize this Payroll Worksheet? This will remove the ability to edit this sheet through the website. Once done, this cannot be undone and the file must be downloaded via the Payroll History section to edit.');
@@ -385,6 +406,14 @@ const Dashboard = ({ userName, onLogout }) => {
         modalType={modalType}
         message={modalMessage}
       />
+      {isTableOpen && (
+        <TableExcel
+          showModal={isTableOpen}
+          onClose={() => setTableOpen(false)}
+          payrollData={payrollData}
+          onSave={handleEditSave}
+        />
+      )}
     </div>
   );
 };

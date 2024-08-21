@@ -20,6 +20,17 @@ router.get('/download-excel', verifyToken, checkAdmin, (req, res) => {
     });
 });
 
+//router.get('/download-pdf/:fileName', async (req, res) => {
+//    const fileName = req.params.fileName;
+//    const filePath = path.join(__dirname, 'payroll-files', fileName);
+
+//    res.download(pdfFilePath, pdfFileName, (err) => {
+//        if (err) {
+//            res.status(500).send({ message: 'Error downloading PDF file.' });
+//        }
+//    });
+//});
+
 //For Arduino
 router.post('/copy-template', verifyDeviceToken , async (req, res) => {
     const templatePath = path.join(payrollFileDir, 'Template.xlsx');
@@ -102,17 +113,6 @@ router.post('/initial-fill', verifyDeviceToken , async (req, res) => {
         res.status(500).send({message: 'Initial hours failed to transfer'});
     }
 });
-  
-//router.get('/download-pdf/:fileName', async (req, res) => {
-//    const fileName = req.params.fileName;
-//    const filePath = path.join(__dirname, 'payroll-files', fileName);
-
-//    res.download(pdfFilePath, pdfFileName, (err) => {
-//        if (err) {
-//            res.status(500).send({ message: 'Error downloading PDF file.' });
-//        }
-//    });
-//});
 
 router.post('/update-payroll', verifyToken, checkAdmin, async (req, res) => {
     const { updates } = req.body;
