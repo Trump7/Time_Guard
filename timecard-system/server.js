@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/database');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -10,7 +11,11 @@ const PORT = process.env.PORT || 3000;
 connectDB();
 
 //middleware
-app.use(cors());
+app.use(cors({
+    origin: 'http://192.168.1.122:80',
+    credentials: true,
+}));
+app.use(cookieParser());
 app.use(express.json());
 
 app.use('/api/users', require('./routes/users'));

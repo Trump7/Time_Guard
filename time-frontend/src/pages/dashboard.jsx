@@ -35,7 +35,7 @@ const Dashboard = ({ userName, onLogout }) => {
   useEffect(() => {
     const fetchEmployees = async () => {
       try{
-        const response = await axios.get(`${BASE_URL}/users`);
+        const response = await axios.get(`${BASE_URL}/users`, {withCredentials: true,});
         setEmployees(response.data);
       } catch(error) {
         console.error('Error fetching employees:', error);
@@ -50,7 +50,7 @@ const Dashboard = ({ userName, onLogout }) => {
     if(employees.length > 0) {
       const fetchEntries = async () => {
         try{
-          const response = await axios.get(`${BASE_URL}/users/history`);
+          const response = await axios.get(`${BASE_URL}/users/history`, {withCredentials: true,});
           const updates = response.data.map((entry) => {
             const user = employees.find((emp) => emp._id.toString() === entry.userId.toString());
             return {
@@ -75,7 +75,7 @@ const Dashboard = ({ userName, onLogout }) => {
   useEffect(() => {
     const fetchPayroll = async () => {
       try{
-        const response = await axios.get(`${BASE_URL}/payroll/payroll-history`);
+        const response = await axios.get(`${BASE_URL}/payroll/payroll-history`, {withCredentials: true,});
         
         setPayrollRecord(response.data);
       } catch(error) {
@@ -90,7 +90,7 @@ const Dashboard = ({ userName, onLogout }) => {
   useEffect(() => {
     const fetchCurrentPayroll = async () => {
       try{
-        const response = await axios.get(`${BASE_URL}/payroll/current-payroll`);
+        const response = await axios.get(`${BASE_URL}/payroll/current-payroll`, {withCredentials: true,});
         const payroll = response.data;
 
         if(payroll && payroll.length > 0){
@@ -132,6 +132,7 @@ const Dashboard = ({ userName, onLogout }) => {
   const handleDownloadExcel = async (filePath) => {
     try {
       const response = await axios.get(`${BASE_URL}/payroll/download-excel`, {
+        withCredentials: true,
         params: { path: filePath },
         responseType: 'blob',
       });
@@ -217,12 +218,12 @@ const Dashboard = ({ userName, onLogout }) => {
         try{
           if(selectedEmployee && modalType === 'edit') {
             //Update employee
-            const response = await axios.put(`${BASE_URL}/users/${selectedEmployee._id}`, newEmployee);
+            const response = await axios.put(`${BASE_URL}/users/${selectedEmployee._id}`, newEmployee, {withCredentials: true,});
             setEmployees(employees.map(emp => (emp._id === selectedEmployee._id ? response.data : emp)));
           } 
           else if(modalType === 'add') {
             //Add new employee
-            const response = await axios.post(`${BASE_URL}/users`, newEmployee);
+            const response = await axios.post(`${BASE_URL}/users`, newEmployee, {withCredentials: true,});
             setEmployees([...employees, response.data]);
           }
           handleCloseModal();
@@ -234,7 +235,7 @@ const Dashboard = ({ userName, onLogout }) => {
         if(selectedEmployee){
           try{
             //Delete employee
-            await axios.delete(`${BASE_URL}/users/${selectedEmployee._id}`);
+            await axios.delete(`${BASE_URL}/users/${selectedEmployee._id}`, {withCredentials: true,});
             setEmployees(employees.filter(emp => emp._id !== selectedEmployee._id));
             handleCloseModal();
           } catch(error) {
@@ -242,7 +243,7 @@ const Dashboard = ({ userName, onLogout }) => {
           }
         }
         else{
-          await axios.post(`${BASE_URL}/payroll/finalize-payroll`);
+          await axios.post(`${BASE_URL}/payroll/finalize-payroll`, {withCredentials: true,});
           setCurrentPayroll(null);
           handleCloseModal();
           window.location.reload();
