@@ -36,7 +36,7 @@ const Modal = ({ isOpen, onClose, title, onSubmit, errors, values, onChange, fie
                 />
               </div>
             ))}
-            <button type="submit" className="bg-blue-500 text-white px-3 py-2 rounded shadow-md hover:bg-blue-700">
+            <button type="submit" className="bg-button-color rounded-3xl text-black px-3 py-1 shadow-md hover:bg-button-hover">
               {modalType === 'edit' ? 'Save Information' : 'Add Employee'}
             </button>
           </form>
@@ -45,10 +45,10 @@ const Modal = ({ isOpen, onClose, title, onSubmit, errors, values, onChange, fie
             <div>
               <p>{message}</p>
               <div className="mt-4 flex justify-end space-x-2">
-                <button onClick={onClose} className="bg-gray-500 text-white px-3 py-2 rounded shadow-md hover:bg-gray-700">
+                <button onClick={onClose} className="bg-gray-500 rounded-3xl text-white px-3 py-2 shadow-md hover:bg-gray-700">
                   Cancel
                 </button>
-                <button onClick={onSubmit} className="bg-red-500 text-white px-3 py-2 rounded shadow-md hover:bg-red-700">
+                <button onClick={onSubmit} className="bg-red-500 rounded-3xl text-white px-3 py-2 shadow-md hover:bg-red-700">
                   I'm Sure
                 </button>
               </div>
