@@ -161,8 +161,8 @@ const Dashboard = ({ userName, onLogout }) => {
 
   const handleEditClick = async () => {
     try{
-      // const response = await axios.get(`${BASE_URL}/payroll/get-payroll-data`, {withCredentials: true,});
-      // setPayrollData(response.data);
+      const response = await axios.get(`${BASE_URL}/payroll/get-payroll-data`, {withCredentials: true,});
+      setPayrollData(response.data);
       setTableOpen(true);
     }
     catch(error){
@@ -172,7 +172,7 @@ const Dashboard = ({ userName, onLogout }) => {
 
   const handleEditSave = async (updatedData) => {
     try {
-      await axios.put(`${BASE_URL}/payroll/update-payroll`, updatedData, {withCredentials: true});
+      await axios.put(`${BASE_URL}/payroll/update-payroll`, {payrollData: updatedData}, {withCredentials: true});
       console.log('Payroll updated!');
     }
     catch(error){
@@ -222,12 +222,14 @@ const Dashboard = ({ userName, onLogout }) => {
     e.preventDefault();
     let newErrors = {};
 
+    const rowAsString = String(newEmployee.row);
+
     if(modalType === 'edit' || modalType === 'add') {
       if(!newEmployee.name) newErrors.name = 'Full Name is required';
       if(!newEmployee.rfid) newErrors.rfid = 'RFID Number is required';
       if(newEmployee.rfid.includes(' ')) newErrors.rfid = 'RFID Number should not contain spaces';
       if(!newEmployee.row) newErrors.row = 'Row Number is required';
-      if(newEmployee.row.includes(' ')) newErrors.row = 'Row Number should not contain spaces';
+      if(rowAsString.includes(' ')) newErrors.row = 'Row Number should not contain spaces';
       if(!newEmployee.short) newErrors.short = 'Short Name is required';
       if(newEmployee.short.length > 7) newErrors.short = 'Short Name should be at most 7 characters';
       //check if rfid number is currently used
@@ -264,7 +266,7 @@ const Dashboard = ({ userName, onLogout }) => {
           }
         }
         else{
-          await axios.post(`${BASE_URL}/payroll/finalize-payroll`, {withCredentials: true,});
+          await axios.post(`${BASE_URL}/payroll/finalize-payroll`, null, {withCredentials: true,});
           setCurrentPayroll(null);
           handleCloseModal();
           window.location.reload();
@@ -389,9 +391,11 @@ const Dashboard = ({ userName, onLogout }) => {
         title={
           modalType === 'edit'
             ? 'Edit Employee'
-            : modalType === 'message'
+            : modalType === 'add'
+            ? 'Add Employee'
+            : modalType === 'message' && selectedEmployee
             ? 'Delete Employee'
-            : 'Add Employee'
+            : 'Finalize Payroll'
         }
         onSubmit={handleSubmit}
         errors={errors}

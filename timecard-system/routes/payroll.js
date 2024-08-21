@@ -135,6 +135,7 @@ router.get('/get-payroll-data', verifyToken, checkAdmin, async (req, res) => {
             const row = worksheet.getRow(user.row);
             const userPayroll = {
                 name: user.name,
+                row: user.row,
                 salary: row.getCell(2).value > 0 ? row.getCell(2).value : '',
                 regHours: row.getCell(3).value > 0 ? row.getCell(3).value : '',
                 otHours: row.getCell(4).value > 0 ? row.getCell(4).value : '',
@@ -145,13 +146,14 @@ router.get('/get-payroll-data', verifyToken, checkAdmin, async (req, res) => {
             };
 
             // Add to totals
-            totals.salary += row.getCell(2).value;
-            totals.regHours += row.getCell(3).value;
-            totals.otHours += row.getCell(4).value;
-            totals.vacaHours += row.getCell(5).value;
-            totals.misc += row.getCell(6).value;
-            totals.rmbExp += row.getCell(7).value;
-            totals.bonus += row.getCell(8).value;
+            totals.salary += parseFloat(row.getCell(2).value) || 0;
+            totals.regHours += parseFloat(row.getCell(3).value) || 0;
+            totals.otHours += parseFloat(row.getCell(4).value) || 0;
+            totals.vacaHours += parseFloat(row.getCell(5).value) || 0;
+            totals.misc += parseFloat(row.getCell(6).value) || 0;
+            totals.rmbExp += parseFloat(row.getCell(7).value) || 0;
+            totals.bonus += parseFloat(row.getCell(8).value) || 0;
+
 
             payrollData.push(userPayroll);
         });
@@ -159,6 +161,7 @@ router.get('/get-payroll-data', verifyToken, checkAdmin, async (req, res) => {
         // Add totals at the end
         payrollData.push({
             name: 'Totals',
+            row: 25,
             salary: totals.salary > 0 ? totals.salary : '',
             regHours: totals.regHours > 0 ? totals.regHours : '',
             otHours: totals.otHours > 0 ? totals.otHours : '',
@@ -176,25 +179,56 @@ router.get('/get-payroll-data', verifyToken, checkAdmin, async (req, res) => {
     }
 });
 
-router.post('/update-payroll', verifyToken, checkAdmin, async (req, res) => {
-    const { updates } = req.body;
-    const filePath = path.join(__dirname, 'payroll-files', 'current-payroll.xlsx');
+router.put('/update-payroll', verifyToken, checkAdmin, async (req, res) => {
+    const { payrollData } = req.body;
+    const currentPath = path.join(payrollFileDir, 'Current-Payroll.xlsx');
     const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.readFile(filePath);
-    const sheet = workbook.getWorksheet(1);
-    
-    updates.forEach(update => {
-        const row = sheet.getRow(update.row);
-        row.getCell('Salary').value = update.salary;
-        row.getCell('RegHours').value = update.regHours;
-        row.commit();
-    });
-    
-    await workbook.xlsx.writeFile(filePath);
-    res.status(200).send({ message: 'Payroll updated successfully.' });
+
+    try {
+        // Load the payroll file
+        await workbook.xlsx.readFile(currentPath);
+        const worksheet = workbook.getWorksheet(1);
+
+        payrollData.forEach((rowData) => {
+            // Log each row data for debugging
+            //console.log('Processing rowData:', rowData);
+            //console.error('Row Num', rowData.row);
+
+            // Ensure row and data fields are defined
+            if (rowData.row && rowData.salary !== undefined && rowData.regHours !== undefined) {
+                const row = worksheet.getRow(rowData.row); // Use the specific row from payrollData
+
+                // Update the cell values in the Excel sheet
+                row.getCell(2).value = rowData.salary > 0 ? rowData.salary : '';
+                row.getCell(3).value = rowData.regHours > 0 ? rowData.regHours : '';
+                row.getCell(4).value = rowData.otHours > 0 ? rowData.otHours : '';
+                row.getCell(5).value = rowData.vacaHours > 0 ? rowData.vacaHours : '';
+                row.getCell(6).value = rowData.misc > 0 ? rowData.misc : '';
+                row.getCell(7).value = rowData.rmbExp > 0 ? rowData.rmbExp : '';
+                row.getCell(8).value = rowData.bonus > 0 ? rowData.bonus : '';
+
+                row.commit();  // Commit the row to save changes
+            } else {
+                //console.error('Row Num', rowData.row);
+                console.error('Invalid row data:', rowData);
+            }
+        });
+
+        // Save the updated Excel file
+        await workbook.xlsx.writeFile(currentPath);
+
+        console.log('Payroll updated successfully.');
+        res.status(200).send({ message: 'Payroll updated successfully.' });
+    } catch (error) {
+        console.error('Error updating payroll:', error);
+        res.status(500).send({ message: 'Error updating payroll.' });
+    }
 });
+
+
   
 router.post('/finalize-payroll', verifyToken, checkAdmin, async (req, res) => {
+    console.log("Got to finalize route");
     const currentFilePath = path.join(payrollFileDir, 'Current-Payroll.xlsx');
     
     //Get the current date

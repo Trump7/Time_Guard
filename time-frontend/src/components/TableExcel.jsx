@@ -7,7 +7,11 @@ const TableExcel = ({ showModal, onClose, payrollData, onSave }) => {
 
   const handleChange = (index, field, value) => {
     const updatedData = [...formData];
-    updatedData[index][field] = value;
+
+    // Parse as a float, default to 0 if invalid
+    const parsedValue = ['salary', 'regHours', 'otHours', 'vacaHours', 'misc', 'rmbExp', 'bonus'].includes(field) ? parseFloat(value) || 0 : value;
+
+    updatedData[index][field] = parsedValue;
     setFormData(updatedData);
   };
 
