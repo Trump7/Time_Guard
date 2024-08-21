@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const TableExcel = ({ showModal, onClose, payrollData, onSave }) => {
   const [formData, setFormData] = useState(payrollData || []);

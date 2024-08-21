@@ -114,6 +114,67 @@ router.post('/initial-fill', verifyDeviceToken , async (req, res) => {
     }
 });
 
+router.get('/get-payroll-data', verifyToken, checkAdmin, async (req, res) => {
+    const currentPath = path.join(payrollFileDir, 'Current-Payroll.xlsx');
+    const workbook = new ExcelJS.Workbook();
+
+    //const roundUp = (num) => Math.ceil(num * 100) / 100;
+
+    try {
+        //load new payroll file
+        await workbook.xlsx.readFile(currentPath);
+        const worksheet = workbook.getWorksheet(1);
+        
+        const employees = await User.find().sort({ row: 1 }); // Assuming `row` field is in the User model and sorted ascending
+
+        let payrollData = [];
+        let totals = { salary: 0, regHours: 0, otHours: 0, vacaHours: 0, misc: 0, rmbExp: 0, bonus: 0 };
+
+        employees.forEach(user => {
+            const row = worksheet.getRow(user.row);
+            const userPayroll = {
+                name: user.name,
+                salary: row.getCell(2).value || 0,
+                regHours: row.getCell(3).value || 0,
+                otHours: row.getCell(4).value || 0,
+                vacaHours: row.getCell(5).value || 0,
+                misc: row.getCell(6).value || 0,
+                rmbExp: row.getCell(7).value || 0,
+                bonus: row.getCell(8).value || 0,
+            };
+
+            // Add to totals
+            totals.salary += userPayroll.salary;
+            totals.regHours += userPayroll.regHours;
+            totals.otHours += userPayroll.otHours;
+            totals.vacaHours += userPayroll.vacaHours;
+            totals.misc += userPayroll.misc;
+            totals.rmbExp += userPayroll.rmbExp;
+            totals.bonus += userPayroll.bonus;
+
+            payrollData.push(userPayroll);
+        });
+
+        // Add totals at the end
+        payrollData.push({
+            name: 'Totals',
+            salary: grandTotal.salary,
+            regHours: grandTotal.regHours,
+            otHours: grandTotal.otHours,
+            vacaHours: grandTotal.vacaHours,
+            misc: grandTotal.misc,
+            rmbExp: grandTotal.rmbExp,
+            bonus: grandTotal.bonus
+        });
+
+        res.status(200).json(payrollData);
+    }
+    catch(error){
+        console.error('Error fetching payroll data: ', error);
+        res.status(500).send({message: 'Error fetching payroll data'});
+    }
+});
+
 router.post('/update-payroll', verifyToken, checkAdmin, async (req, res) => {
     const { updates } = req.body;
     const filePath = path.join(__dirname, 'payroll-files', 'current-payroll.xlsx');
