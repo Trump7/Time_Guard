@@ -115,6 +115,7 @@ router.post('/initial-fill', verifyDeviceToken , async (req, res) => {
 });
 
 router.get('/get-payroll-data', verifyToken, checkAdmin, async (req, res) => {
+    console.log("got to route");
     const currentPath = path.join(payrollFileDir, 'Current-Payroll.xlsx');
     const workbook = new ExcelJS.Workbook();
 
@@ -134,23 +135,23 @@ router.get('/get-payroll-data', verifyToken, checkAdmin, async (req, res) => {
             const row = worksheet.getRow(user.row);
             const userPayroll = {
                 name: user.name,
-                salary: row.getCell(2).value || 0,
-                regHours: row.getCell(3).value || 0,
-                otHours: row.getCell(4).value || 0,
-                vacaHours: row.getCell(5).value || 0,
-                misc: row.getCell(6).value || 0,
-                rmbExp: row.getCell(7).value || 0,
-                bonus: row.getCell(8).value || 0,
+                salary: row.getCell(2).value > 0 ? row.getCell(2).value : '',
+                regHours: row.getCell(3).value > 0 ? row.getCell(3).value : '',
+                otHours: row.getCell(4).value > 0 ? row.getCell(4).value : '',
+                vacaHours: row.getCell(5).value > 0 ? row.getCell(5).value : '',
+                misc: row.getCell(6).value > 0 ? row.getCell(6).value : '',
+                rmbExp: row.getCell(7).value > 0 ? row.getCell(7).value : '',
+                bonus: row.getCell(8).value > 0 ? row.getCell(8).value : '',
             };
 
             // Add to totals
-            totals.salary += userPayroll.salary;
-            totals.regHours += userPayroll.regHours;
-            totals.otHours += userPayroll.otHours;
-            totals.vacaHours += userPayroll.vacaHours;
-            totals.misc += userPayroll.misc;
-            totals.rmbExp += userPayroll.rmbExp;
-            totals.bonus += userPayroll.bonus;
+            totals.salary += row.getCell(2).value;
+            totals.regHours += row.getCell(3).value;
+            totals.otHours += row.getCell(4).value;
+            totals.vacaHours += row.getCell(5).value;
+            totals.misc += row.getCell(6).value;
+            totals.rmbExp += row.getCell(7).value;
+            totals.bonus += row.getCell(8).value;
 
             payrollData.push(userPayroll);
         });
@@ -158,13 +159,13 @@ router.get('/get-payroll-data', verifyToken, checkAdmin, async (req, res) => {
         // Add totals at the end
         payrollData.push({
             name: 'Totals',
-            salary: grandTotal.salary,
-            regHours: grandTotal.regHours,
-            otHours: grandTotal.otHours,
-            vacaHours: grandTotal.vacaHours,
-            misc: grandTotal.misc,
-            rmbExp: grandTotal.rmbExp,
-            bonus: grandTotal.bonus
+            salary: totals.salary > 0 ? totals.salary : '',
+            regHours: totals.regHours > 0 ? totals.regHours : '',
+            otHours: totals.otHours > 0 ? totals.otHours : '',
+            vacaHours: totals.vacaHours > 0 ? totals.vacaHours : '',
+            misc: totals.misc > 0 ? totals.misc : '',
+            rmbExp: totals.rmbExp > 0 ? totals.rmbExp : '',
+            bonus: totals.bonus > 0 ? totals.bonus : ''
         });
 
         res.status(200).json(payrollData);

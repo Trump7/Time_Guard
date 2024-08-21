@@ -28,7 +28,7 @@ const TableExcel = ({ showModal, onClose, payrollData, onSave }) => {
           </button>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full bg-white">
+          <table className="bg-white">
             <thead>
               <tr>
                 <th className="py-2 px-4 border">Name</th>
@@ -43,70 +43,77 @@ const TableExcel = ({ showModal, onClose, payrollData, onSave }) => {
             </thead>
             <tbody>
               {formData.map((row, index) => (
-                <tr key={index}>
-                  <td className="py-2 px-4 border">{row.name}</td>
-                  <td className="py-2 px-4 border">
+                <tr key={index} className={row.name === 'Totals' ? 'font-bold' : ''}>
+                  <td className="py-2 px-4 border min-w-[200px]">{row.name}</td>
+                  <td className="py-2 px-4 border min-w-[120px]">
                     <input
                       type="text"
                       value={row.salary}
                       onChange={(e) => handleChange(index, 'salary', e.target.value)}
+                      className="w-full"
                     />
                   </td>
-                  <td className="py-2 px-4 border">
+                  <td className="py-2 px-4 border min-w-[120px]">
                     <input
                       type="text"
                       value={row.regHours}
                       onChange={(e) => handleChange(index, 'regHours', e.target.value)}
+                      className="w-full"
                     />
                   </td>
-                  <td className="py-2 px-4 border">
+                  <td className="py-2 px-4 border min-w-[120px]">
                     <input
                       type="text"
                       value={row.otHours}
                       onChange={(e) => handleChange(index, 'otHours', e.target.value)}
+                      className="w-full"
                     />
                   </td>
-                  <td className="py-2 px-4 border">
+                  <td className="py-2 px-4 border min-w-[120px]">
                     <input
                       type="text"
                       value={row.vacaHours}
                       onChange={(e) => handleChange(index, 'vacaHours', e.target.value)}
+                      className="w-full"
                     />
                   </td>
-                  <td className="py-2 px-4 border">
+                  <td className="py-2 px-4 border min-w-[120px]">
                     <input
                       type="text"
                       value={row.misc}
                       onChange={(e) => handleChange(index, 'misc', e.target.value)}
+                      className="w-full"
                     />
                   </td>
-                  <td className="py-2 px-4 border">
+                  <td className="py-2 px-4 border min-w-[120px]">
                     <input
                       type="text"
                       value={row.rmbExp}
                       onChange={(e) => handleChange(index, 'rmbExp', e.target.value)}
+                      className="w-full"
                     />
                   </td>
-                  <td className="py-2 px-4 border">
+                  <td className="py-2 px-4 border min-w-[120px]">
                     <input
                       type="text"
                       value={row.bonus}
                       onChange={(e) => handleChange(index, 'bonus', e.target.value)}
+                      className="w-full"
                     />
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <div className="mt-4 flex justify-end">
+        </div>
+        <div className="mt-4 flex justify-end">
             <button
               onClick={handleSave}
-              className="bg-button-color rounded-3xl text-black px-3 py-1 rounded shadow-md hover:bg-button-hover"
+              className="bg-button-color rounded-3xl text-black text-xl px-6 py-3 rounded shadow-md hover:bg-button-hover"
             >
               Save
             </button>
           </div>
-        </div>
       </div>
     </div>
   );
