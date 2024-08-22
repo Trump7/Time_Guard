@@ -139,10 +139,11 @@ router.post('/login', async (req, res) => {
         const currentTime = new Date();
         const formattedDate = currentTime.toLocaleString('en-US');
         
-        //set lastLogin to date & time
-        user.lastLogin = formattedDate;
+        //set prevLogin & newLogin to date & time
+        user.prevLogin = user.newLogin;
+        user.newLogin = formattedDate;
         
-        //send token to frontend, save lastLogin
+        //send token to frontend, save newLogin & prevLogin
         await user.save();
         res.json({token});
     } catch (err) {
