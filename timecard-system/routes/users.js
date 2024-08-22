@@ -126,18 +126,29 @@ router.get('/:id', verifyToken, checkAdmin, async(req, res) => {
 // Login Route
 router.post('/login', async (req, res) => {
     try {
-      const { username, password } = req.body;
-      const user = await Account.findOne({ username });
-      if (!user) return res.status(400).send('User not found');
-  
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) return res.status(400).send('Invalid credentials');
-  
-      const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, { expiresIn: '1h' });
-      res.json({token});
+        const { username, password } = req.body;
+        const user = await Account.findOne({ username });
+        if (!user) return res.status(400).send('User not found');
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) return res.status(400).send('Invalid credentials');
+
+        const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+        //get current time
+        const currentTime = new Date();
+        const formattedDate = currentTime.toLocaleString('en-US');
+        
+        //set lastLogin to date & time
+        user.lastLogin = formattedDate;
+        
+        //send token to frontend, save lastLogin
+        await user.save();
+        res.json({token});
     } catch (err) {
-      res.status(500).send('Error logging in user');
+        console.error('Error loggin in user: ', err);
+        res.status(500).send('Error logging in user');
     }
-  });
+});
 
 module.exports = router;
