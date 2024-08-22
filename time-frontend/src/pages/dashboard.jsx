@@ -8,7 +8,10 @@ import Modal from '../components/Modal';
 import TableExcel from '../components/TableExcel';
 import '../components/customScrollbar.css';
 
-const Dashboard = ({ userName, onLogout }) => {
+const Dashboard = ({ onLogout }) => {
+  const prevLogin = Cookies.get('prevLogin');
+  const userName = Cookies.get('userName');
+
   const currentDateTime = new Date();
   const formattedDate = currentDateTime.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   const formattedTime = currentDateTime.toLocaleTimeString('en-US');
@@ -232,8 +235,7 @@ const Dashboard = ({ userName, onLogout }) => {
       if(rowAsString.includes(' ')) newErrors.row = 'Row Number should not contain spaces';
       if(!newEmployee.short) newErrors.short = 'Short Name is required';
       if(newEmployee.short.length > 7) newErrors.short = 'Short Name should be at most 7 characters';
-      //check if rfid number is currently used
-      //check if row number is currently used
+      
 
       setErrors(newErrors);
 
@@ -253,9 +255,11 @@ const Dashboard = ({ userName, onLogout }) => {
         } catch(error) {
           if(error.response.data.message){
             const errorMessage = error.response.data.message;
+            //check if rfid number is currently used
             if(errorMessage.includes('RFID')){
               newErrors.rfid = 'RFID number already exists';
             }
+            //check if row number is currently used
             if(errorMessage.includes('Row')){
               newErrors.row = 'Row number already exists';
             }
@@ -289,7 +293,7 @@ const Dashboard = ({ userName, onLogout }) => {
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-auto">
-      <Header isLoggedIn={true} userName={userName} onLogout={onLogout} />
+      <Header isLoggedIn={true} userName={userName} prevLogin={prevLogin} onLogout={onLogout} />
       <div className="flex flex-grow justify-center p-6 bg-main-background space-x-4 overflow-auto">
         {/* Employee Box */}
         <div className="flex flex-col bg-white p-6 rounded-3xl shadow-md min-w-[300px] max-w-[400px] min-h-[710px] flex-grow">

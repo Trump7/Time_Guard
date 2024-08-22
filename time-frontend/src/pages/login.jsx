@@ -38,10 +38,12 @@ const Login = () => {
     if (Object.keys(hasError).length === 0) {
       try {
           const response = await axios.post(`${BASE_URL}/login`, { username, password });
-          const { token } = response.data;
+          const { token, userName, prevLogin } = response.data;
 
           //Store token in Cookies
           Cookies.set('token', token, { expires: 0.0833 }); // 6 hours
+          Cookies.set('userName', userName, { expires: 0.0833 });
+          Cookies.set('prevLogin', prevLogin, { expires: 0.0833 });
 
           //go to dashboard page
           nav('/dashboard');

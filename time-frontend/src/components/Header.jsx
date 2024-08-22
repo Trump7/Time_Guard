@@ -2,12 +2,13 @@ import React from 'react';
 import Cookies from 'js-cookie';
 
 
-const Header = ({ isLoggedIn, userName }) => {
+const Header = ({ isLoggedIn, userName, prevLogin }) => {
   return (
     <header className="bg-main-background p-4 text-black flex justify-between items-center">
       <h1 className="text-5xl">Time Guard</h1>
       {isLoggedIn ? (
         <div className="flex items-center">
+          <span className="text-md mr-4">Last Login: {prevLogin}</span>
           <span className="text-xl mr-4">Welcome Buffkin Tile {userName}</span>
           <button
             onClick={onLogout}
