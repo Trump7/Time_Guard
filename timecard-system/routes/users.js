@@ -9,15 +9,31 @@ const { verifyToken, checkAdmin, verifyDeviceToken } = require('../middleware/au
 
 //add a new user
 router.post('/', verifyToken, checkAdmin, async(req, res) => {
-    const user = new User(req.body);
+    const {rfid, row} = req.body;
+    let errorMessage = '';
+
     try{
+        const rfidIs = await User.findOne({rfid});
+        if(rfidIs){
+            errorMessage += 'RFID number already exists. ';
+        }
+        const rowIs = await User.findOne({row});
+        if(rowIs){
+            errorMessage += 'Row number already exists. ';
+        }
+
+        if(errorMessage){
+            return res.status(400).json({message: errorMessage.trim()});
+        }
+
+        const user = new User(req.body);
         await user.save();
         res.send(user);
         console.log('A new user has been created!');
     }
     catch(error){
-        console.log('User could not be created');
-        res.status(400).send(error);
+        console.log('User could not be created', error);
+        res.status(400).send({message: 'User could not be created', error});
     }
 });
 
@@ -64,9 +80,28 @@ router.post('/validate', verifyDeviceToken, async(req, res) => {
     }
 });
 
-// Edit user
-router.put('/:id', verifyToken, checkAdmin, async(req, res) => {
+//Edit user
+router.put('/:id', verifyToken, checkAdmin, async (req, res) => {
+    const { rfid, row } = req.body;
+    let errorMessage = '';
+
     try {
+        // Check if RFID number already exists and belongs to another user
+        const rfidIs = await User.findOne({ rfid, _id: { $ne: req.params.id } });
+        if (rfidIs) {
+            errorMessage += 'RFID number already exists. ';
+        }
+
+        // Check if row number already exists and belongs to another user
+        const rowIs = await User.findOne({ row, _id: { $ne: req.params.id } });
+        if (rowIs) {
+            errorMessage += 'Row number already exists.';
+        }
+
+        if (errorMessage) {
+            return res.status(400).json({ message: errorMessage.trim() });
+        }
+
         const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!user) {
             return res.status(404).send('User not found');
@@ -74,10 +109,11 @@ router.put('/:id', verifyToken, checkAdmin, async(req, res) => {
         res.send(user);
         console.log(`User ${user.name} has been updated!`);
     } catch (error) {
-        console.log('User could not be updated');
-        res.status(400).send(error);
+        console.log('User could not be updated', error);
+        res.status(400).send({ message: 'User could not be updated', error });
     }
 });
+
 
 // Reset user's times from Device
 router.put('/reset-times', verifyDeviceToken, async(req, res) => {

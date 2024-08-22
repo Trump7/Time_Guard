@@ -251,7 +251,19 @@ const Dashboard = ({ userName, onLogout }) => {
           }
           handleCloseModal();
         } catch(error) {
-          console.error('Error saving employee:', error);
+          if(error.response.data.message){
+            const errorMessage = error.response.data.message;
+            if(errorMessage.includes('RFID')){
+              newErrors.rfid = 'RFID number already exists';
+            }
+            if(errorMessage.includes('Row')){
+              newErrors.row = 'Row number already exists';
+            }
+          }
+          else{
+            console.error('Error saving employee:', error);
+          }
+          setErrors(newErrors);
         }
       }
     } else if(modalType === 'message') {
