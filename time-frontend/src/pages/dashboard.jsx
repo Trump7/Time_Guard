@@ -292,7 +292,7 @@ const Dashboard = ({ onLogout }) => {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-auto">
+    <div className="flex flex-col h-screen w-screen overflow-auto min-w-[1050px]">
       <Header isLoggedIn={true} userName={userName} prevLogin={prevLogin} onLogout={onLogout} />
       <div className="flex flex-grow justify-center p-6 bg-main-background space-x-4 overflow-auto">
         {/* Employee Box */}

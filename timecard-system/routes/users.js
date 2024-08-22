@@ -173,16 +173,10 @@ router.post('/login', async (req, res) => {
 
         //get current time
         const currentTime = new Date();
-        const formattedDate = currentTime.toLocaleString('en-US');
         
         //set prevLogin & newLogin to date & time
-        if(!user.prevLogin){ //remove after database updates
-            user.prevLogin = formattedDate;//
-        }//
-        else{//
-            user.prevLogin = user.newLogin;
-        }//
-        user.newLogin = formattedDate;
+        user.prevLogin = user.newLogin;
+        user.newLogin = currentTime;
         
         //send token to frontend, save newLogin & prevLogin
         await user.save();
