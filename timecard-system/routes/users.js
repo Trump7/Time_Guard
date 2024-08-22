@@ -79,20 +79,19 @@ router.put('/:id', verifyToken, checkAdmin, async(req, res) => {
     }
 });
 
-// Reset user's times
-// router.put('/:id', verifyToken, checkAdmin, async(req, res) => {
-//     try {
-//         const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
-//         if (!user) {
-//             return res.status(404).send('User not found');
-//         }
-//         res.send(user);
-//         console.log(`User ${user.name} has been updated!`);
-//     } catch (error) {
-//         console.log('User could not be updated');
-//         res.status(400).send(error);
-//     }
-// });
+// Reset user's times from Device
+router.put('/reset-times', verifyDeviceToken, async(req, res) => {
+    try {
+        //go through each user and update their total hours to 0
+        await User.updateMany({}, {totalHours: 0});
+        console.log('Hours Reset');
+        res.status(200).send({message: 'All hours were reset to 0'});
+    }
+    catch(error){
+        console.error('Error during resetting:', error);
+        res.status(500).send({message: 'Reset of Hours failed to complete.'});
+    }
+});
 
 // Delete user
 router.delete('/:id', verifyToken, checkAdmin, async(req, res) => {
