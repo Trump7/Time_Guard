@@ -6,6 +6,7 @@ import Header from '../components/Header';
 import InputField from '../components/InputField';
 import Modal from '../components/Modal';
 import TableExcel from '../components/TableExcel';
+import Cookies from 'js-cookie';
 import '../components/customScrollbar.css';
 
 const Dashboard = ({ onLogout }) => {
