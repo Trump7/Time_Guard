@@ -80,6 +80,20 @@ router.post('/validate', verifyDeviceToken, async(req, res) => {
     }
 });
 
+// Reset user's times from Device
+router.put('/reset-times', verifyDeviceToken, async(req, res) => {
+    try {
+        //go through each user and update their total hours to 0
+        await User.updateMany({}, {totalHours: 0});
+        console.log('Hours Reset');
+        res.status(200).send({message: 'All hours were reset to 0'});
+    }
+    catch(error){
+        console.error('Error during resetting:', error);
+        res.status(500).send({message: 'Reset of Hours failed to complete.'});
+    }
+});
+
 //Edit user
 router.put('/:id', verifyToken, checkAdmin, async (req, res) => {
     const { rfid, row } = req.body;
@@ -111,21 +125,6 @@ router.put('/:id', verifyToken, checkAdmin, async (req, res) => {
     } catch (error) {
         console.log('User could not be updated', error);
         res.status(400).send({ message: 'User could not be updated', error });
-    }
-});
-
-
-// Reset user's times from Device
-router.put('/reset-times', verifyDeviceToken, async(req, res) => {
-    try {
-        //go through each user and update their total hours to 0
-        await User.updateMany({}, {totalHours: 0});
-        console.log('Hours Reset');
-        res.status(200).send({message: 'All hours were reset to 0'});
-    }
-    catch(error){
-        console.error('Error during resetting:', error);
-        res.status(500).send({message: 'Reset of Hours failed to complete.'});
     }
 });
 
