@@ -31,7 +31,7 @@ const TableExcel = ({ showModal, onClose, payrollData, onSave }) => {
             <FontAwesomeIcon icon={faTimes} />
           </button>
         </div>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto overflow-y-auto flex-grow scrollbar p-2" style={{ maxHeight: '500px'}}>
           <table className="bg-white">
             <thead>
               <tr>
