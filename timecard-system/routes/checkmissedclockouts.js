@@ -7,7 +7,7 @@ const { verifyDeviceToken } = require('../middleware/authMiddleware');
 router.post('/', verifyDeviceToken, async(req, res) => {
     try {
         //getting timecards where there is no clockOut
-        const missedClockouts = await Timecard.find({ clockOut: null, clockIn: { $lt: new Date().setHours(0, 0, 0, 0) } });
+        const missedClockouts = await Timecard.find({ clockOut: null });
 
         if (missedClockouts.length > 0) {
             for (let timecard of missedClockouts) {
