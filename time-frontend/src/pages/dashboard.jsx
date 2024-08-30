@@ -67,6 +67,7 @@ const Dashboard = ({ onLogout }) => {
               date: new Date(entry.clockIn).toLocaleDateString('en-US'),
               inTime: new Date(entry.clockIn).toLocaleTimeString('en-US'),
               outTime: entry.clockOut ? new Date(entry.clockOut).toLocaleTimeString('en-US') : 'N/A',
+              status: entry.status,
             };
           });
           setLiveUpdates(updates);
@@ -378,7 +379,7 @@ const Dashboard = ({ onLogout }) => {
         </div>
 
         {/* Live Updates Box */}
-        <div className="flex flex-col bg-white p-6 rounded-3xl shadow-md min-w-[300px] max-w-[400px] min-h-[710px] flex-grow">
+        <div className="flex flex-col bg-white p-6 rounded-3xl shadow-md min-w-[400px] max-w-[400px] min-h-[710px] flex-grow">
           <h3 className="text-2xl mb-8">Recent Updates</h3>
           <InputField
             type="text"
@@ -393,8 +394,14 @@ const Dashboard = ({ onLogout }) => {
                   <span>{update.name}</span>
                   <span>{update.date}</span>
                 </div>
-                <div>
-                  <span>In: {update.inTime}</span> <span>Out: {update.outTime || 'N/A'}</span>
+                <div className="flex justify-between items-center">
+                  <span>In: {update.inTime}</span> 
+                  <span>Out: {update.outTime || 'N/A'}</span>
+                  <span>
+                    {update.status === 'Active' && '⏳'}
+                    {update.status === 'Completed' && '✅'}
+                    {update.status === 'Did not clock out' && '⚠️'}
+                  </span>
                 </div>
               </div>
             ))}
