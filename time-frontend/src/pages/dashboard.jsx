@@ -298,7 +298,7 @@ const Dashboard = ({ onLogout }) => {
       <Header isLoggedIn={true} userName={userName} prevLogin={prevLogin} onLogout={onLogout} />
       <div className="flex flex-grow justify-center p-6 bg-main-background space-x-4 overflow-auto">
         {/* Employee Box */}
-        <div className="flex flex-col bg-white p-6 rounded-3xl shadow-md min-w-[300px] max-w-[400px] min-h-[710px] flex-grow">
+        <div className="flex flex-col bg-white p-6 rounded-3xl shadow-md min-w-[340px] max-w-[400px] min-h-[710px] flex-grow">
           <div className="flex justify-between items-center mb-8">
             <h3 className="text-2xl">Employees</h3>
             <button
@@ -349,9 +349,9 @@ const Dashboard = ({ onLogout }) => {
                     <button onClick={() => handleDownloadExcel(record.filePath)} className="px-3 py-2 rounded hover:bg-gray-200" title="Download as Excel Document">
                       <FontAwesomeIcon icon={faFileExcel} />
                     </button>
-                    <button onClick={() => handleDownloadPdf(record.filePath)} className="px-3 py-2 rounded hover:bg-gray-200" title="Download as PDF Document">
+                    {/* <button onClick={() => handleDownloadPdf(record.filePath)} className="px-3 py-2 rounded hover:bg-gray-200" title="Download as PDF Document">
                       <FontAwesomeIcon icon={faFilePdf} />
-                    </button>
+                    </button> */}
                   </div>
                 </div>
               );
