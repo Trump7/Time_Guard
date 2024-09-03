@@ -8,7 +8,7 @@ const Modal = ({ isOpen, onClose, title, onSubmit, errors, values, onChange, fie
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-      <div className="bg-white p-6 rounded-3xl shadow-md w-96">
+      <div className="font-orbitron bg-white p-6 rounded-3xl shadow-md w-96">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl">{title}</h2>
           <button onClick={onClose}>

@@ -19,12 +19,12 @@ const InputField = ({ type, placeholder, value, onChange, isError }) => {
         onChange={onChange}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
-        className={`font-roboto w-full px-3 py-2 border rounded-3xl shadow-md bg-textfield-color text-black placeholder-transparent peer ${
+        className={`font-segment text-lg w-full px-3 py-2 border rounded-3xl shadow-md bg-textfield-color text-black placeholder-transparent peer ${
           isError ? 'border-red-500' : 'border-gray-300'
         }`}
       />
       <label
-        className={`font-roboto absolute left-3 transition-all ${
+        className={`font-orbitron absolute left-3 transition-all ${
           isFocused || value ? '-top-6 left-1 text-md text-black' : 'top-2 left-3 text-black'
         }`}
       >
