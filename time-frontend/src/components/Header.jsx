@@ -19,7 +19,7 @@ const Header = ({ isLoggedIn, userName, prevLogin }) => {
       {isLoggedIn ? (
         <>
         <div className="flex-grow text-center">
-          <span className="text-md">Last Login: </span>
+          <span className="text-md font-orbitron">Last Login: </span>
           <span className="text-md font-segment">{prevLoginDate} {prevLoginTime}</span>
         </div>
         <div className="flex items-center ml-auto">
