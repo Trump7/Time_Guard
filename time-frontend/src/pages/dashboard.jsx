@@ -140,7 +140,7 @@ const Dashboard = ({ onLogout }) => {
 
       //Checking if search term matches a name or date
       const nameMatch = liveUpdates.name.toLowerCase().includes(searchTerm);
-      const dateMatch = liveUpdates.data.includes(searchTerm);
+      const dateMatch = liveUpdates.date.includes(searchTerm);
 
       return nameMatch || dateMatch;
     })
