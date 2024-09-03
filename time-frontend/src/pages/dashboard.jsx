@@ -314,13 +314,13 @@ const Dashboard = ({ onLogout }) => {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-auto min-w-[1050px]">
+    <div className="flex flex-col h-screen w-screen overflow-auto min-w-[1240px]">
       <Header isLoggedIn={true} userName={userName} prevLogin={prevLogin} onLogout={onLogout} />
       <div className="flex flex-grow justify-center p-6 bg-main-background space-x-4 overflow-auto">
         {/* Employee Box */}
         <div className="flex flex-col bg-white p-6 rounded-3xl shadow-md min-w-[340px] max-w-[400px] min-h-[710px] flex-grow">
           <div className="flex justify-between items-center mb-8">
-            <h3 className="text-2xl font-orbitron">Employees</h3>
+            <h3 className="text-2xl font-orbitron font-bold">Employees</h3>
             <button
               onClick={handleAddEmployeeClick}
               className="font-orbitron bg-button-color rounded-3xl text-black px-3 py-1 rounded shadow-md hover:bg-button-hover"
@@ -336,7 +336,7 @@ const Dashboard = ({ onLogout }) => {
           />
           <div className="overflow-y-auto flex-grow scrollbar p-2" style={{ maxHeight: '600px' }}>
             {filteredEmployees.map(employee => (
-              <div key={employee._id} className="font-segment flex justify-between items-center bg-gray-100 p-2 mb-3 rounded-xl shadow-md">
+              <div key={employee._id} className="font-segment text-xl flex justify-between items-center bg-gray-100 p-2 mb-3 rounded-xl shadow-md">
                 <span>{employee.name}</span>
                 <div>
                   <button onClick={() => handleEditEmployeeClick(employee)} className="px-3 py-2 rounded hover:bg-gray-200 mr-2">
@@ -355,7 +355,7 @@ const Dashboard = ({ onLogout }) => {
         <div className="flex flex-col justify-between items-center flex-grow min-w-[350px] max-w-[400px]">
           <div className="flex flex-col bg-white p-6 rounded-3xl shadow-md w-full h-full min-h-[300px]">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-2xl font-orbitron">Payroll History</h3>
+              <h3 className="text-2xl font-orbitron font-bold">Payroll History</h3>
             </div>
             <div className="overflow-y-auto flex-grow scrollbar p-2" style={{ maxHeight: '220px' }}>
               {payrollRecord.map((record) => {
@@ -379,13 +379,12 @@ const Dashboard = ({ onLogout }) => {
             </div>
           </div>
           <div className="flex flex-col items-center justify-center flex-grow mb-4 mt-4">
-          <p className="text-md font-orbitron">Last Updated</p>
             <p className="text-4xl font-segment">{formattedTime}</p>
             <p className="text-4xl font-segment">{formattedDate}</p>
           </div>
-          <div className="flex flex-col bg-white p-6 rounded-3xl shadow-md w-full h-full min-h-[275px]">
+          <div className="flex flex-col bg-white p-6 rounded-3xl shadow-md w-full h-full min-h-[300px]">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-2xl font-orbitron">Export / Edit</h3>
+              <h3 className="text-2xl font-orbitron font-bold">Export / Edit</h3>
             </div>
             <p className="text-center mb-6 font-orbitron">{payrollMessage}</p>
             
@@ -400,7 +399,7 @@ const Dashboard = ({ onLogout }) => {
 
         {/* Live Updates Box */}
         <div className="flex flex-col bg-white p-6 rounded-3xl shadow-md min-w-[400px] max-w-[400px] min-h-[710px] flex-grow">
-          <h3 className="text-2xl mb-8 font-orbitron">Recent Updates</h3>
+          <h3 className="text-2xl mb-8 font-orbitron font-bold">Recent Updates</h3>
           <InputField
             type="text"
             placeholder="Search..."
@@ -409,7 +408,7 @@ const Dashboard = ({ onLogout }) => {
           />
           <div className="overflow-y-auto flex-grow scrollbar p-2" style={{ maxHeight: '600px' }}>
             {filteredUpdates.map(update => (
-              <div key={update.id} className="font-segment flex flex-col bg-gray-100 p-2 mb-3 rounded-xl shadow-md">
+              <div key={update.id} className="text-xl font-segment flex flex-col bg-gray-100 p-2 mb-3 rounded-xl shadow-md">
                 <div className="flex justify-between">
                   <span>{update.name}</span>
                   <span>{update.date}</span>

@@ -20,7 +20,7 @@ const Header = ({ isLoggedIn, userName, prevLogin }) => {
         <>
         <div className="flex-grow text-center">
           <span className="text-md font-orbitron">Last Login: </span>
-          <span className="text-md font-segment">{prevLoginDate} {prevLoginTime}</span>
+          <span className="text-xl font-segment">{prevLoginDate} {prevLoginTime}</span>
         </div>
         <div className="flex items-center ml-auto">
           <span className="text-xl mr-4 font-orbitron">Welcome {userName}</span>
