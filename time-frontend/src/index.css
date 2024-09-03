@@ -1,3 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,400;0,700;1,300&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom Font Faces */
+@font-face {
+  font-family: '7-Segment';
+  src: url('./fonts/7segment.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Back to the Future';
+  src: url('./fonts/BTTF.ttf') format('truetype');
+}

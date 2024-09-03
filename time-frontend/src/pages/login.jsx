@@ -63,7 +63,7 @@ const Login = () => {
       <Header isLoggedIn={false} />
       <div className="flex flex-grow justify-center items-center bg-main-background">
         <div className="flex flex-col justify-center items-center">
-          <h2 className="text-2xl mb-1 text-center">System Login</h2>
+          <h2 className="text-2xl mb-1 font-orbitron text-center">System Login</h2>
           <form onSubmit={handleSubmit} className="bg-white p-6 rounded-3xl shadow-md w-80">
             {errorMessage && (
               <div className="mb-7 p-1 bg-red-500 text-white text-center rounded">
@@ -84,7 +84,7 @@ const Login = () => {
               onChange={(e) => { setPassword(e.target.value); setIsPasswordError(false); setErrorMessage(''); }}
               isError={isPasswordError}
             />
-            <button type="submit" className="bg-button-color text-black px-4 py-2 rounded-3xl w-20 mt-4 hover:bg-button-hover shadow-md block mx-auto">
+            <button type="submit" className="font-orbitron bg-button-color text-black px-4 py-2 rounded-3xl w-20 mt-4 hover:bg-button-hover shadow-md block mx-auto">
               Enter
             </button>
           </form>

@@ -5,6 +5,12 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        'orbitron' : ['Orbitron', 'sans-serif'],
+        'roboto' : ['Roboto', 'sans-serif'],
+        '7segment' : ['7-Segment', 'monospace'],
+        'BTTF' : ['Back to the Future', 'sans-serif'],
+      },
       colors: {
         'main-background' : '#E8FCFB',
         'button-color' : '#B2E2E5',
