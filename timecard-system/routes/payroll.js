@@ -102,7 +102,7 @@ router.post('/initial-fill', verifyDeviceToken , async (req, res) => {
         });
 
         //update total (this value may change if more employees are added)
-        worksheet.getRow(25).getCell(3).value = roundUp(grandTotal);
+        worksheet.getRow(24).getCell(3).value = roundUp(grandTotal);
 
         await workbook.xlsx.writeFile(currentPath);
         console.log('Initial hours transfered');
@@ -161,7 +161,7 @@ router.get('/get-payroll-data', verifyToken, checkAdmin, async (req, res) => {
         // Add totals at the end
         payrollData.push({
             name: 'Totals',
-            row: 25,
+            row: 24,
             salary: totals.salary > 0 ? totals.salary : '',
             regHours: totals.regHours > 0 ? totals.regHours : '',
             otHours: totals.otHours > 0 ? totals.otHours : '',
