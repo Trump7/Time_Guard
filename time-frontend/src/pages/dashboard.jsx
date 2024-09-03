@@ -334,7 +334,7 @@ const Dashboard = ({ onLogout }) => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <div className="overflow-y-auto flex-grow scrollbar p-2" style={{ maxHeight: '600px' }}>
+          <div className="overflow-y-auto flex-grow scrollbar p-2">
             {filteredEmployees.map(employee => (
               <div key={employee._id} className="font-segment text-xl flex justify-between items-center bg-gray-100 p-2 mb-3 rounded-xl shadow-md">
                 <span>{employee.name}</span>
@@ -406,7 +406,7 @@ const Dashboard = ({ onLogout }) => {
             value={liveSearchTerm}
             onChange={(e) => setLiveSearchTerm(e.target.value)}
           />
-          <div className="overflow-y-auto flex-grow scrollbar p-2" style={{ maxHeight: '600px' }}>
+          <div className="overflow-y-auto flex-grow scrollbar p-2">
             {filteredUpdates.map(update => (
               <div key={update.id} className="text-xl font-segment flex flex-col bg-gray-100 p-2 mb-3 rounded-xl shadow-md">
                 <div className="flex justify-between">
