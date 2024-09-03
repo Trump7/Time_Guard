@@ -24,7 +24,7 @@ const InputField = ({ type, placeholder, value, onChange, isError }) => {
         }`}
       />
       <label
-        className={`font-roboto absolute left-3 transition-all ${
+        className={`font-orbitron absolute left-3 transition-all ${
           isFocused || value ? '-top-6 left-1 text-md text-black' : 'top-2 left-3 text-black'
         }`}
       >
