@@ -134,9 +134,29 @@ const Dashboard = ({ onLogout }) => {
     employee.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredUpdates = liveUpdates.filter(liveUpdates =>
-    liveUpdates.name.toLowerCase().includes(liveSearchTerm.toLowerCase())
-  );
+  const filteredUpdates = liveUpdates
+    .filter(liveUpdates => {
+      const searchTerm  = liveSearchTerm.toLocaleLowerCase();
+
+      //Checking if search term matches a name or date
+      const nameMatch = liveUpdates.name.toLowerCase().includes(searchTerm);
+      const dateMatch = liveUpdates.data.includes(searchTerm);
+
+      return nameMatch || dateMatch;
+    })
+    .sort((a,b) => {
+      //Sorting entries in order from most recently used
+      const dateA = a.outTime !== 'N/A'
+        ? new Date(`${a.date} ${a.outTime}`) //Use outTime if available
+        : new Date(`${a.date} ${a.inTime}`); //Else use inTime
+
+      const dateB = b.outTime !== 'N/A'
+      ? new Date(`${b.date} ${b.outTime}`)
+      : new Date(`${b.date} ${b.inTime}`);
+
+      //sort by most recent date/time
+      return dateB - dateA;
+    });
 
   const handleDownloadExcel = async (filePath) => {
     try {
