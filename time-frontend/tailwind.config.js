@@ -8,7 +8,7 @@ module.exports = {
       fontFamily: {
         'orbitron' : ['Orbitron', 'sans-serif'],
         'roboto' : ['Roboto', 'sans-serif'],
-        '7segment' : ['7-Segment', 'monospace'],
+        'segment' : ['Seven Segment', 'sans-serif'],
         'BTTF' : ['Back to the Future', 'sans-serif'],
       },
       colors: {

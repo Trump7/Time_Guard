@@ -7,8 +7,8 @@
 
 /* Custom Font Faces */
 @font-face {
-  font-family: '7-Segment';
-  src: url('./fonts/7segment.ttf') format('truetype');
+  font-family: 'Seven Segment';
+  src: url('./fonts/Segment.ttf') format('truetype');
 }
 
 @font-face {
