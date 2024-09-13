@@ -34,7 +34,7 @@ const Dashboard = ({ onLogout }) => {
   const [modalType, setModalType] = useState('');
   const [modalMessage, setModalMessage] = useState('');
   const [selectedEmployee, setSelectedEmployee] = useState(null);
-  const [newEmployee, setNewEmployee] = useState({ name: '', short: '', rfid: '', row: '' });
+  const [newEmployee, setNewEmployee] = useState({ name: '', short: '', rfid: '', row: '', username: '', password: '' });
   const [errors, setErrors] = useState({});
 
   const BASE_URL = 'http://192.168.1.122:3000/api';
@@ -212,7 +212,7 @@ const Dashboard = ({ onLogout }) => {
   };
 
   const handleAddEmployeeClick = () => {
-    setNewEmployee({ name: '', short: '', rfid: '', row: '' });
+    setNewEmployee({ name: '', short: '', rfid: '', row: '', username: '', password: '' });
     setErrors({});
     setModalType('add');
     setIsModalOpen(true);
@@ -220,7 +220,7 @@ const Dashboard = ({ onLogout }) => {
 
   const handleEditEmployeeClick = (employee) => {
     setSelectedEmployee(employee);
-    setNewEmployee({ name: employee.name, short: employee.short, rfid: employee.rfid, row: employee.row });
+    setNewEmployee({ name: employee.name, short: employee.short, rfid: employee.rfid, row: employee.row, username: employee.username, password: employee.password });
     setErrors({});
     setModalType('edit');
     setIsModalOpen(true);
@@ -284,6 +284,9 @@ const Dashboard = ({ onLogout }) => {
             //check if row number is currently used
             if(errorMessage.includes('Row')){
               newErrors.row = 'Row number already exists';
+            }
+            if(errorMessage.includes('Quickbooks')){
+              newErrors.username = 'Quickbooks username already exists'
             }
           }
           else{
@@ -448,7 +451,9 @@ const Dashboard = ({ onLogout }) => {
           { name: 'name', type: 'text', placeholder: 'Full Name' },
           { name: 'short', type: 'text', placeholder: 'Short Name' },
           { name: 'rfid', type: 'text', placeholder: 'RFID Number' },
-          { name: 'row', type: 'text', placeholder: 'Payroll Row Number'}
+          { name: 'row', type: 'text', placeholder: 'Payroll Row Number'},
+          { name: 'username', type: 'text', placeholder: 'Quickbooks User'},
+          { name: 'password', type: 'text', placeholder: 'Quickbooks Pass'}
         ]}
         modalType={modalType}
         message={modalMessage}

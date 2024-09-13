@@ -6,7 +6,7 @@ const UserSchema = new mongoose.Schema({
     rfid: {type: String, unique: true},
     row: {type: Number, unique: true},
     totalHours: {type: Number, default: 0},
-    username: {type: String, unique: true},
+    username: {type: String},
     password: {type: String},
 }, {collection: 'Users'});
 
