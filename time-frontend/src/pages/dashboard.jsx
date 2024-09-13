@@ -288,11 +288,15 @@ const Dashboard = ({ onLogout }) => {
             if(errorMessage.includes('Quickbooks')){
               newErrors.username = 'Quickbooks username already exists'
             }
+
+            setErrors(newErrors);
+            
+            //Reload employee object
+            setNewEmployee(...newEmployee);
           }
           else{
             console.error('Error saving employee:', error);
           }
-          setErrors(newErrors);
         }
       }
     } else if(modalType === 'message') {

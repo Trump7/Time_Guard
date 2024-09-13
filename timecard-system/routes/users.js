@@ -22,7 +22,7 @@ router.post('/', verifyToken, checkAdmin, async(req, res) => {
             errorMessage += 'Row number already exists. ';
         }
         const usernameIs = await User.findOne({username});
-        if(usernameIs){
+        if(usernameIs && username !== ''){
             errorMessage += 'Quickbooks username already exists. ';
         }
 
@@ -118,7 +118,7 @@ router.put('/:id', verifyToken, checkAdmin, async (req, res) => {
 
         // Check if Quickbooks username already exists and belongs to another user
         const usernameIs = await User.findOne({ username, _id: { $ne: req.params.id } });
-        if (usernameIs) {
+        if (usernameIs && username !== '') {
             errorMessage += 'Quickbooks username already exists.';
         }
 
