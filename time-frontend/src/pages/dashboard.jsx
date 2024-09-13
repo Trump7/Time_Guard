@@ -290,9 +290,9 @@ const Dashboard = ({ onLogout }) => {
             }
 
             setErrors(newErrors);
-            
+
             //Reload employee object
-            setNewEmployee(...newEmployee);
+            setNewEmployee({...newEmployee});
           }
           else{
             console.error('Error saving employee:', error);
