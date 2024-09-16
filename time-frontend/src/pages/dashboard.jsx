@@ -33,6 +33,13 @@ const Dashboard = ({ onLogout }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('');
   const [modalMessage, setModalMessage] = useState('');
+
+  const [isHoursModalOpen, setIsHoursModalOpen] = useState(false);
+  const [selectedHours, setSelectedHours] = useState('00');
+  const [selectedMinutes, setSelectedMinutes] = useState('00');
+  const [selectedMessage, setSelectedMessage] = useState('');
+
+
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [newEmployee, setNewEmployee] = useState({ name: '', short: '', rfid: '', row: '', username: '', password: '' });
   const [errors, setErrors] = useState({});
@@ -221,6 +228,49 @@ const Dashboard = ({ onLogout }) => {
     setModalType('message');
     setIsModalOpen(true);
   };
+
+  const handleAddHoursClick = () => {
+    setIsHoursModalOpen(true);
+  };
+  
+  const handleCloseHoursModal = () => {
+    setIsHoursModalOpen(false);
+    setSelectedHours('00');
+    setSelectedMinutes('00');
+    setSelectedMessage('');
+    setSelectedEmployee(null);
+  };
+
+  const handleAddHoursSubmit = async () => {
+    let errors = {};
+  
+    if (!selectedEmployee) {
+      errors.employee = 'Employee must be selected';
+    }
+    if (selectedHours === '00' && selectedMinutes === '00') {
+      errors.time = 'You must add at least 1 minute';
+    }
+  
+    if (Object.keys(errors).length === 0) {
+      try {
+        const totalHours = parseFloat(selectedHours) + parseFloat(selectedMinutes) / 60;
+        const response = await axios.post(`${BASE_URL}/payroll/add-hours`, {
+          employeeId: selectedEmployee,
+          hours: totalHours,
+          message: selectedMessage,
+        }, { withCredentials: true });
+  
+        setLiveUpdates([...liveUpdates, response.data]);  // Update live updates
+        handleCloseHoursModal();  // Close the Hours Modal
+      } catch (error) {
+        console.error('Error adding hours:', error);
+      }
+    } else {
+      setErrors(errors);  // Show errors if any
+    }
+  };
+  
+  
 
   const handleAddEmployeeClick = () => {
     setNewEmployee({ name: '', short: '', rfid: '', row: '', username: '', password: '' });
@@ -418,6 +468,12 @@ const Dashboard = ({ onLogout }) => {
         {/* Live Updates Box */}
         <div className="flex flex-col bg-white p-6 rounded-3xl shadow-md min-w-[400px] max-w-[400px] min-h-[710px] flex-grow">
           <h3 className="text-2xl mb-8 font-orbitron font-bold">Recent Updates</h3>
+          <button
+              onClick={handleAddHoursClick}
+              className="font-orbitron bg-button-color rounded-3xl text-black px-3 py-1 rounded shadow-md hover:bg-button-hover"
+            >
+              Add Hours
+            </button>
           <InputField
             type="text"
             placeholder="Search..."
@@ -464,6 +520,22 @@ const Dashboard = ({ onLogout }) => {
           </div>
         </div>
       </div>
+      
+      <HoursModal
+        isOpen={isHoursModalOpen}
+        onClose={handleCloseHoursModal}
+        employees={employees}
+        selectedEmployee={selectedEmployee}
+        setSelectedEmployee={setSelectedEmployee}
+        hours={selectedHours}
+        setHours={setSelectedHours}
+        minutes={selectedMinutes}
+        setMinutes={setSelectedMinutes}
+        message={selectedMessage}
+        setMessage={setSelectedMessage}
+        onSubmit={handleAddHoursSubmit}
+      />
+
 
       <Modal
         isOpen={isModalOpen}
