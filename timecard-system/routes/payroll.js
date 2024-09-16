@@ -4,6 +4,7 @@ const path = require('path');
 const ExcelJS = require('exceljs');
 const router = express.Router();
 const User = require('../models/User');
+const TimeAdd = require('../models/TimeAdd');
 const PHistory = require('../models/PHistory');
 const { verifyToken, checkAdmin, verifyDeviceToken } = require('../middleware/authMiddleware');
 
@@ -281,7 +282,28 @@ router.get('/payroll-history', verifyToken, checkAdmin, async (req, res) => {
         res.status(500).send({ message: 'Error retrieving payroll history.' });
     }
 });
-  
-  
+
+router.post('/add-time', verifyToken, checkAdmin, async(req, res) => {
+    const {id, hours, message} = req.body;
+    const user = await User.findOne({ id });
+    if(user){
+        //Adding the new hours to the user if they exist
+        user.totalHours += hours;
+        await user.save();
+
+        //Adding the entry to the recent updates with the custom message
+        const timeadd = new TimeAdd({
+            userId: user._id,
+            hours: hours,
+            message: message,
+        });
+        await timeadd.save();
+        res.send(timeadd);
+        console.log(`User ${user.name} has ${hours} added to total.`);
+    }
+    else{
+        res.status(404).send('User not found');
+    }
+});
 
 module.exports = router;

@@ -61,14 +61,25 @@ const Dashboard = ({ onLogout }) => {
           const response = await axios.get(`${BASE_URL}/users/history`, {withCredentials: true,});
           const updates = response.data.map((entry) => {
             const user = employees.find((emp) => emp._id.toString() === entry.userId.toString());
-            return {
-              id: entry._id,
-              name: user ? user.name : 'Unknown User',
-              date: new Date(entry.clockIn).toLocaleDateString('en-US'),
-              inTime: new Date(entry.clockIn).toLocaleTimeString('en-US'),
-              outTime: entry.clockOut ? new Date(entry.clockOut).toLocaleTimeString('en-US') : 'N/A',
-              status: entry.status,
-            };
+            if(entry.clockIn){
+              return {
+                id: entry._id,
+                name: user ? user.name : 'Unknown User',
+                date: new Date(entry.clockIn).toLocaleDateString('en-US'),
+                inTime: new Date(entry.clockIn).toLocaleTimeString('en-US'),
+                outTime: entry.clockOut ? new Date(entry.clockOut).toLocaleTimeString('en-US') : 'N/A',
+                status: entry.status,
+              };
+            }
+            else{
+              return {
+                id: entry._id,
+                name: user ? user.name : 'Unknown User',
+                hoursAdded: entry.hours,
+                message: entry.message,
+                status: entry.status,
+              };
+            }
           });
           setLiveUpdates(updates);
         } catch(error) {
@@ -416,19 +427,38 @@ const Dashboard = ({ onLogout }) => {
           <div className="overflow-y-auto flex-grow scrollbar p-2">
             {filteredUpdates.map(update => (
               <div key={update.id} className="text-xl font-segment flex flex-col bg-gray-100 p-2 mb-3 rounded-xl shadow-md">
-                <div className="flex justify-between">
-                  <span>{update.name}</span>
-                  <span>{update.date}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span>In: {update.inTime}</span> 
-                  <span>Out: {update.outTime || 'N/A'}</span>
-                  <span>
-                    {update.status === 'Active' && '⏳'}
-                    {update.status === 'Completed' && '✅'}
-                    {update.status === 'Did not clock out' && '⚠️'}
-                  </span>
-                </div>
+                {update.inTime ? (
+                  <>
+                    <div className="flex justify-between">
+                      <span>{update.name}</span>
+                      <span>{update.date}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>In: {update.inTime}</span> 
+                      <span>Out: {update.outTime || 'N/A'}</span>
+                      <span>
+                        {update.status === 'Active' && '⏳'}
+                        {update.status === 'Completed' && '✅'}
+                        {update.status === 'Did not clock out' && '⚠️'}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex justify-between">
+                      <span>{update.name}</span>
+                      <span>{update.hoursAdded} Hrs Added</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>{update.message}</span> 
+                      <span>
+                        {update.status === 'Completed' && '✅'}
+                      </span>
+                    </div>
+                  </>
+                )}
+                
+                
               </div>
             ))}
           </div>
