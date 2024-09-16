@@ -5,6 +5,7 @@ import { faEdit, faTrashAlt, faFilePdf, faFileExcel } from '@fortawesome/free-so
 import Header from '../components/Header';
 import InputField from '../components/InputField';
 import Modal from '../components/Modal';
+import HoursModal from '../components/HoursModal';
 import TableExcel from '../components/TableExcel';
 import Cookies from 'js-cookie';
 import '../components/customScrollbar.css';
@@ -467,13 +468,15 @@ const Dashboard = ({ onLogout }) => {
 
         {/* Live Updates Box */}
         <div className="flex flex-col bg-white p-6 rounded-3xl shadow-md min-w-[400px] max-w-[400px] min-h-[710px] flex-grow">
-          <h3 className="text-2xl mb-8 font-orbitron font-bold">Recent Updates</h3>
-          <button
+          <div className='flex justify-between items-center mb-3'>
+            <h3 className="text-2xl font-orbitron font-bold">Recent Updates</h3>
+            <button
               onClick={handleAddHoursClick}
               className="font-orbitron bg-button-color rounded-3xl text-black px-3 py-1 rounded shadow-md hover:bg-button-hover"
             >
               Add Hours
             </button>
+          </div>
           <InputField
             type="text"
             placeholder="Search..."

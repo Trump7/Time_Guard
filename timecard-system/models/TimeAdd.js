@@ -7,4 +7,4 @@ const TimeAddSchema = new mongoose.Schema({
     status: {type: String, default: 'Completed'}
 }, {collection: 'Entries'});
 
-module.exports = mongoose.model('Entries', TimeAddSchema);
+module.exports = mongoose.models.Entries || mongoose.model('Entries', TimeAddSchema);

@@ -283,9 +283,9 @@ router.get('/payroll-history', verifyToken, checkAdmin, async (req, res) => {
     }
 });
 
-router.post('/add-time', verifyToken, checkAdmin, async(req, res) => {
-    const {id, hours, message} = req.body;
-    const user = await User.findOne({ id });
+router.post('/add-hours', verifyToken, checkAdmin, async(req, res) => {
+    const {employeeId, hours, message} = req.body;
+    const user = await User.findOne(employeeId);
     if(user){
         //Adding the new hours to the user if they exist
         user.totalHours += hours;
