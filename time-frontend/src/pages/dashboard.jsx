@@ -84,6 +84,7 @@ const Dashboard = ({ onLogout }) => {
                 id: entry._id,
                 name: user ? user.name : 'Unknown User',
                 hoursAdded: entry.hours,
+                date: new Date(entry.date).toLocaleDateString('en-US'),
                 message: entry.message,
                 status: entry.status,
               };
@@ -158,24 +159,37 @@ const Dashboard = ({ onLogout }) => {
       const searchTerm  = liveSearchTerm.toLocaleLowerCase();
 
       //Checking if search term matches a name or date
-      const nameMatch = liveUpdates.name.toLowerCase().includes(searchTerm);
-      const dateMatch = liveUpdates.date.includes(searchTerm);
+      const nameMatch = liveUpdates.name.toLowerCase().includes(searchTerm) || false;
+      const dateMatch = liveUpdates.date.includes(searchTerm) || false;
 
       return nameMatch || dateMatch;
     })
-    .sort((a,b) => {
-      //Sorting entries in order from most recently used
-      const dateA = a.outTime !== 'N/A'
+    .sort((a, b) => {
+      const dateA = a.outTime !== 'N/A' && a.outTime
         ? new Date(`${a.date} ${a.outTime}`) //Use outTime if available
-        : new Date(`${a.date} ${a.inTime}`); //Else use inTime
-
-      const dateB = b.outTime !== 'N/A'
-      ? new Date(`${b.date} ${b.outTime}`)
-      : new Date(`${b.date} ${b.inTime}`);
-
-      //sort by most recent date/time
-      return dateB - dateA;
+        : a.inTime !== 'N/A' && a.inTime
+        ? new Date(`${a.date} ${a.inTime}`) //Else use inTime
+        : new Date(a.date); //If no inTime or outTime, use date
+    
+      const dateB = b.outTime !== 'N/A' && b.outTime
+        ? new Date(`${b.date} ${b.outTime}`) //Use outTime if available
+        : b.inTime !== 'N/A' && b.inTime
+        ? new Date(`${b.date} ${b.inTime}`) //Else use inTime
+        : new Date(b.date); //If no inTime or outTime, use date
+    
+      //If we can't make valid date objects, don't change order
+      if (isNaN(dateA) || isNaN(dateB)) {
+        return 0;
+      }
+    
+      if (dateA.getTime() === dateB.getTime()) {
+        if (!a.inTime && !a.outTime) return 1; //Move addHours entries down
+        if (!b.inTime && !b.outTime) return -1; //Move addHours entries up
+      }
+    
+      return dateB - dateA; //Sort by most recent
     });
+    
 
   const handleDownloadExcel = async (filePath) => {
     try {
@@ -242,34 +256,43 @@ const Dashboard = ({ onLogout }) => {
     setSelectedEmployee(null);
   };
 
-  const handleAddHoursSubmit = async () => {
+  const handleAddHoursSubmit = async (employeeId, totalHours, message, date) => {
+    console.log('Submitting hours:', {
+      employeeId,
+      totalHours,
+      message,
+      date,
+    }); // Log data being sent to the server
+
     let errors = {};
   
-    if (!selectedEmployee) {
+    if (!employeeId) {
       errors.employee = 'Employee must be selected';
     }
-    if (selectedHours === '00' && selectedMinutes === '00') {
+    if (totalHours === 0) {
       errors.time = 'You must add at least 1 minute';
     }
   
     if (Object.keys(errors).length === 0) {
       try {
-        const totalHours = parseFloat(selectedHours) + parseFloat(selectedMinutes) / 60;
         const response = await axios.post(`${BASE_URL}/payroll/add-hours`, {
-          employeeId: selectedEmployee,
+          employeeId,
           hours: totalHours,
-          message: selectedMessage,
+          message,
+          date,
         }, { withCredentials: true });
   
-        setLiveUpdates([...liveUpdates, response.data]);  // Update live updates
+        console.log('Server response:', response.data); // Log server response
+  
         handleCloseHoursModal();  // Close the Hours Modal
       } catch (error) {
-        console.error('Error adding hours:', error);
+        console.error('Error adding hours:', error);  // Log errors if any
       }
     } else {
       setErrors(errors);  // Show errors if any
     }
-  };
+};
+
   
   
 
@@ -506,7 +529,7 @@ const Dashboard = ({ onLogout }) => {
                   <>
                     <div className="flex justify-between">
                       <span>{update.name}</span>
-                      <span>{update.hoursAdded} Hrs Added</span>
+                      <span>{update.hoursAdded} {update.date}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span>{update.message}</span> 
@@ -516,8 +539,6 @@ const Dashboard = ({ onLogout }) => {
                     </div>
                   </>
                 )}
-                
-                
               </div>
             ))}
           </div>

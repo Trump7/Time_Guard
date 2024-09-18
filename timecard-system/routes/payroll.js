@@ -116,7 +116,6 @@ router.post('/initial-fill', verifyDeviceToken , async (req, res) => {
 });
 
 router.get('/get-payroll-data', verifyToken, checkAdmin, async (req, res) => {
-    console.log("got to route");
     const currentPath = path.join(payrollFileDir, 'Current-Payroll.xlsx');
     const workbook = new ExcelJS.Workbook();
 
@@ -284,8 +283,9 @@ router.get('/payroll-history', verifyToken, checkAdmin, async (req, res) => {
 });
 
 router.post('/add-hours', verifyToken, checkAdmin, async(req, res) => {
-    const {employeeId, hours, message} = req.body;
-    const user = await User.findOne(employeeId);
+    const {employeeId, hours, message, date} = req.body;
+    console.log('Received add-hours request:', {employeeId, hours, message, date});
+    const user = await User.findById(employeeId);
     if(user){
         //Adding the new hours to the user if they exist
         user.totalHours += hours;
@@ -294,12 +294,14 @@ router.post('/add-hours', verifyToken, checkAdmin, async(req, res) => {
         //Adding the entry to the recent updates with the custom message
         const timeadd = new TimeAdd({
             userId: user._id,
-            hours: hours,
+            hoursAdded: hours,
+            date: date,
             message: message,
+            status: 'Completed',
         });
         await timeadd.save();
         res.send(timeadd);
-        console.log(`User ${user.name} has ${hours} added to total.`);
+        console.log(`User ${user.name} has ${hours} hours added to total.`);
     }
     else{
         res.status(404).send('User not found');
