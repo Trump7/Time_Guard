@@ -9,7 +9,7 @@ const { verifyToken, checkAdmin, verifyDeviceToken } = require('../middleware/au
 
 //add a new user
 router.post('/', verifyToken, checkAdmin, async(req, res) => {
-    const {rfid, row, username} = req.body;
+    const {rfid, row} = req.body;
     let errorMessage = '';
 
     try{
@@ -20,10 +20,6 @@ router.post('/', verifyToken, checkAdmin, async(req, res) => {
         const rowIs = await User.findOne({row});
         if(rowIs){
             errorMessage += 'Row number already exists. ';
-        }
-        const usernameIs = await User.findOne({username});
-        if(usernameIs && username !== ''){
-            errorMessage += 'Quickbooks username already exists. ';
         }
 
         if(errorMessage){
@@ -100,7 +96,7 @@ router.put('/reset-times', verifyDeviceToken, async(req, res) => {
 
 //Edit user
 router.put('/:id', verifyToken, checkAdmin, async (req, res) => {
-    const { rfid, row, username } = req.body;
+    const { rfid, row } = req.body;
     let errorMessage = '';
 
     try {
@@ -114,12 +110,6 @@ router.put('/:id', verifyToken, checkAdmin, async (req, res) => {
         const rowIs = await User.findOne({ row, _id: { $ne: req.params.id } });
         if (rowIs) {
             errorMessage += 'Row number already exists.';
-        }
-
-        // Check if Quickbooks username already exists and belongs to another user
-        const usernameIs = await User.findOne({ username, _id: { $ne: req.params.id } });
-        if (usernameIs && username !== '') {
-            errorMessage += 'Quickbooks username already exists.';
         }
 
         if (errorMessage) {
