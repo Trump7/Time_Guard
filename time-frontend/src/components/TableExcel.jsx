@@ -4,19 +4,36 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const TableExcel = ({ showModal, onClose, payrollData, onSave }) => {
   const [formData, setFormData] = useState(payrollData || []);
+  
+  //Allow nums with two nums after decimal
+  const regex = /^\d*\.?\d{0,2}$/;
 
   const handleChange = (index, field, value) => {
     const updatedData = [...formData];
 
-    // Parse as a float, default to 0 if invalid
-    const parsedValue = ['salary', 'regHours', 'otHours', 'vacaHours', 'misc', 'rmbExp', 'bonus'].includes(field) ? parseFloat(value) || 0 : value;
-
-    updatedData[index][field] = parsedValue;
-    setFormData(updatedData);
+    //Check if regex passes (only one decimal point)
+    if (regex.test(value) || value === "") {
+      //Update the field
+      updatedData[index][field] = value;
+      setFormData(updatedData);
+    }
   };
 
   const handleSave = () => {
-    onSave(formData);
+    //Before saving, parse the values into numbers or keep them blank
+    const validatedData = formData.map(row => {
+      const updatedRow = { ...row };
+      const numericFields = ['salary', 'regHours', 'otHours', 'vacaHours', 'misc', 'rmbExp', 'bonus'];
+
+      numericFields.forEach(field => {
+        //Parse the numeric fields or keep as blank
+        updatedRow[field] = updatedRow[field] === '' ? '' : parseFloat(updatedRow[field]).toFixed(1);
+      });
+
+      return updatedRow;
+    });
+
+    onSave(validatedData);
     onClose();
   };
 
