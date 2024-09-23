@@ -65,7 +65,7 @@ router.post('/validate', verifyDeviceToken, async(req, res) => {
     try{
         const user = await User.findOne({rfid});
         if(user){
-            const activeEntry = await Timecard.findOne({userId: user._id, clockOut: null});
+            const activeEntry = await Timecard.findOne({userId: user._id, clockOut: null, status: 'Active'});
             console.log(`RFID: ${rfid} validated for user ${user.name}, clocked in: ${!!activeEntry}`);
             res.send({user, isClockedIn: !!activeEntry});
         }

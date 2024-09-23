@@ -10,7 +10,7 @@ router.post('/', verifyDeviceToken, async(req, res) => {
     const {rfid} = req.body;
     const user = await User.findOne({rfid});
     if(user){
-        const timecard = await Timecard.findOne({userId: user._id, clockOut: null});
+        const timecard = await Timecard.findOne({userId: user._id, clockOut: null, status: 'Active'});
         if(timecard){
             timecard.clockOut = new Date();
             timecard.status = 'Completed';

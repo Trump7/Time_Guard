@@ -286,7 +286,16 @@ router.post('/add-hours', verifyToken, checkAdmin, async(req, res) => {
     const {employeeId, hours, message, date} = req.body;
     console.log('Received add-hours request:', {employeeId, hours, message, date});
     const user = await User.findById(employeeId);
+    const parsedTime = Number(hours);
     if(user){
+        if(!isNaN(parsedTime)){
+            user.totalHours += parsedTime;
+            await user.save();
+        }
+        else{
+            console.error('Invalid hours:', parsedTime);
+            throw new Error('Hours value is not a valid number');
+        }
         //Adding the new hours to the user if they exist
         user.totalHours += hours;
         await user.save();
