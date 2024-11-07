@@ -115,6 +115,55 @@ router.post('/initial-fill', verifyDeviceToken , async (req, res) => {
     }
 });
 
+//need to add new confirmation for the timecard device to check if its been finalized
+router.get('/is-finalized', verifyDeviceToken, async (req, res) => {
+    try {
+        const payroll = await PHistory.find({isFinal: false}).sort({ periodEndDate: -1 });
+        console.log('Payroll has not been finalized...');
+        res.status(500).send();
+    } catch (error) {
+        console.error('Payroll has been finalized, no current payroll exists: ', error);
+        res.status(200).send();
+    }
+});
+
+//If it has not been finalized, the arduino needs to finalize it
+router.post('/finalize-auto', verifyDeviceToken, async (req, res) => {
+    const currentFilePath = path.join(payrollFileDir, 'Current-Payroll.xlsx');
+    
+    //Get the current date
+    try{
+        const payrollEntry = await PHistory.findOne({ fileName: 'Current-Payroll.xlsx', isFinal: false});
+        if(!payrollEntry){
+            return res.status(404).send({ message: 'No active payroll found to finalize.' });
+        }
+
+        const newFileName = new Date(payrollEntry.periodEndDate).toISOString().split('T')[0];
+        const newFilePath = path.join(payrollFileDir, `${newFileName}.xlsx`);
+
+        //Rename the file
+        fs.rename(currentFilePath, newFilePath, async (err) => {
+            if (err) {
+                console.error('Error finalizing payroll:', err);
+                return res.status(500).send({ message: 'Error finalizing payroll.' });
+            }
+
+            payrollEntry.fileName = `${newFileName}.xlsx`;
+            payrollEntry.filePath = newFilePath;
+            payrollEntry.isFinal = true;
+            await payrollEntry.save();
+
+            console.log(`Payroll finalized and renamed to ${newFileName}.xlsx`);
+            res.status(200).send({ message: `Payroll finalized and renamed to ${newFileName}.xlsx` });
+        });
+    }
+    catch(error){
+        console.error('Error during finalization:', error);
+        res.status(500).send({message: 'Failed to finalize data'});
+    } 
+});
+
+
 router.get('/get-payroll-data', verifyToken, checkAdmin, async (req, res) => {
     const currentPath = path.join(payrollFileDir, 'Current-Payroll.xlsx');
     const workbook = new ExcelJS.Workbook();
@@ -273,6 +322,8 @@ router.get('/current-payroll', verifyToken, checkAdmin, async (req, res) => {
     }
 });
 
+//need to add new confirmation for the timecard device to check if its been finalized
+
 router.get('/payroll-history', verifyToken, checkAdmin, async (req, res) => {
     try {
         const payrollRecords = await PHistory.find({isFinal: true}).sort({ periodEndDate: -1 }).exec();
@@ -297,7 +348,6 @@ router.post('/add-hours', verifyToken, checkAdmin, async(req, res) => {
             throw new Error('Hours value is not a valid number');
         }
         //Adding the new hours to the user if they exist
-        user.totalHours += hours;
         await user.save();
 
         //Adding the entry to the recent updates with the custom message

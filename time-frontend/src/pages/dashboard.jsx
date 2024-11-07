@@ -452,8 +452,8 @@ const Dashboard = ({ onLogout }) => {
             <div className="overflow-y-auto flex-grow scrollbar p-2" style={{ maxHeight: '220px' }}>
               {payrollRecord.map((record) => {
                 const tempDate = new Date(record.periodEndDate);
-                const formattedEDate = tempDate.toLocaleDateString('en-US');
-                const formattedSDate = new Date(tempDate.setDate(tempDate.getDate() - 7)).toLocaleDateString('en-US');
+                const formattedEDate = new Date(tempDate.setDate(tempDate.getDate() + 1)).toLocaleDateString('en-US'); //Tuesday
+                const formattedSDate = new Date(tempDate.setDate(tempDate.getDate() - 6)).toLocaleDateString('en-US'); //Wednesday previous week
               return (
                 <div key={record._id} className="flex font-segment justify-between items-center bg-gray-100 p-2 mb-3 rounded-xl shadow-md">
                   <span>{`${formattedSDate} to ${formattedEDate}`}</span>
