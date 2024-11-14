@@ -38,6 +38,7 @@ router.post('/copy-template', verifyDeviceToken , async (req, res) => {
     const destinationPath = path.join(payrollFileDir, 'Current-Payroll.xlsx');
 
     const today = new Date();
+    today.setHours(today.getHours() - 1); //Adjusting time for DST
     const formattedDate = today.toISOString().split('T')[0]; //Format date as 'YYYY-MM-DD'
 
     fs.copyFile(templatePath, destinationPath, async (err) => {
@@ -138,7 +139,10 @@ router.post('/finalize-auto', verifyDeviceToken, async (req, res) => {
             return res.status(404).send({ message: 'No active payroll found to finalize.' });
         }
 
-        const newFileName = new Date(payrollEntry.periodEndDate).toISOString().split('T')[0];
+        const temp = new Date(payrollEntry.periodEndDate);
+        temp.setHours(temp.getHours() - 1); //Adjusting time for DST
+        const newFileName = temp.toISOString().split('T')[0];
+        
         const newFilePath = path.join(payrollFileDir, `${newFileName}.xlsx`);
 
         //Rename the file
@@ -287,7 +291,10 @@ router.post('/finalize-payroll', verifyToken, checkAdmin, async (req, res) => {
             return res.status(404).send({ message: 'No active payroll found to finalize.' });
         }
 
-        const newFileName = new Date(payrollEntry.periodEndDate).toISOString().split('T')[0];
+        const temp = new Date(payrollEntry.periodEndDate);
+        temp.setHours(temp.getHours() - 1); //Adjusting time for DST
+        const newFileName = temp.toISOString().split('T')[0];
+        
         const newFilePath = path.join(payrollFileDir, `${newFileName}.xlsx`);
 
         //Rename the file
@@ -321,8 +328,6 @@ router.get('/current-payroll', verifyToken, checkAdmin, async (req, res) => {
         res.status(500).send({ message: 'Error retrieving current payroll.' });
     }
 });
-
-//need to add new confirmation for the timecard device to check if its been finalized
 
 router.get('/payroll-history', verifyToken, checkAdmin, async (req, res) => {
     try {
