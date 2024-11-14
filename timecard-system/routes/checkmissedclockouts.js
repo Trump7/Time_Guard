@@ -6,19 +6,20 @@ const { verifyDeviceToken } = require('../middleware/authMiddleware');
 //Function for Arduino
 router.post('/', verifyDeviceToken, async(req, res) => {
     try {
-        //getting timecards where there is no clockOut
-        const missedClockouts = await Timecard.find({ clockOut: null });
+        //getting timecards where there is no clockOut time and it's not a manual add
+        const missedClockouts = await Timecard.find({ clockOut: null, status: "Active" });
 
         if (missedClockouts.length > 0) {
             for (let timecard of missedClockouts) {
                 //clockOut = clockIn so no hours are added
                 timecard.clockOut = timecard.clockIn;
                 timecard.status = 'Did not clock out';
-                timecard.note = 'Automatically set clock-out to clock-in due to missed clock-out. No hours added.';
-
+                
+                console.log(`User ${timecard.userId} did not clock out. Clockin Time: ${timecard.clockIn}`);
                 await timecard.save();
-                console.log(`Updated timecard for user ${timecard.userId}: Set clockOut to clockIn due to missed clock-out.`);
             }
+            console.log(`${missedClockouts.length} timecards updated.`);
+
             res.send({ message: `${missedClockouts.length} timecards updated.` });
         } else {
             res.send({ message: 'No missed clock-outs found.' });
