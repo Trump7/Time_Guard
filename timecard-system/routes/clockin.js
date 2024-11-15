@@ -15,7 +15,7 @@ router.post('/', verifyDeviceToken, async(req, res) => {
         });
         await timecard.save();
         res.send(timecard);
-        console.log(`User ${user.name} clocked in at ${timecard.clockIn}.`)
+        console.log(`User ${user.name} clocked in at ${timecard.clockIn.toLocaleString()}.`)
     }
     else{
         res.status(404).send('User not found');

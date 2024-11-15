@@ -281,7 +281,7 @@ router.put('/update-payroll', verifyToken, checkAdmin, async (req, res) => {
 
   
 router.post('/finalize-payroll', verifyToken, checkAdmin, async (req, res) => {
-    console.log("Got to finalize route");
+    console.log("Finalizing payroll data...");
     const currentFilePath = path.join(payrollFileDir, 'Current-Payroll.xlsx');
     
     //Get the current date
@@ -340,7 +340,7 @@ router.get('/payroll-history', verifyToken, checkAdmin, async (req, res) => {
 
 router.post('/add-hours', verifyToken, checkAdmin, async(req, res) => {
     const {employeeId, hours, message, date} = req.body;
-    console.log('Received add-hours request:', {employeeId, hours, message, date});
+    //console.log('Received add-hours request:', {employeeId, hours, message, date});
     const user = await User.findById(employeeId);
     const parsedTime = Number(hours);
     if(user){

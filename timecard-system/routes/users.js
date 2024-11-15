@@ -29,7 +29,7 @@ router.post('/', verifyToken, checkAdmin, async(req, res) => {
         const user = new User(req.body);
         await user.save();
         res.send(user);
-        console.log('A new user has been created!');
+        console.log(`${user.name} was successfully added.`);
     }
     catch(error){
         console.log('User could not be created', error);
@@ -66,7 +66,7 @@ router.post('/validate', verifyDeviceToken, async(req, res) => {
         const user = await User.findOne({rfid});
         if(user){
             const activeEntry = await Timecard.findOne({userId: user._id, clockOut: null, status: 'Active'});
-            console.log(`RFID: ${rfid} validated for user ${user.name}, clocked in: ${!!activeEntry}`);
+            //console.log(`RFID: ${rfid} validated for user ${user.name}, clocked in: ${!!activeEntry}`);
             res.send({user, isClockedIn: !!activeEntry});
         }
         else{
@@ -85,7 +85,7 @@ router.put('/reset-times', verifyDeviceToken, async(req, res) => {
     try {
         //go through each user and update their total hours to 0
         await User.updateMany({}, {totalHours: 0});
-        console.log('Hours Reset');
+        console.log('All hours have been reset to 0.');
         res.status(200).send({message: 'All hours were reset to 0'});
     }
     catch(error){
@@ -121,14 +121,14 @@ router.put('/:id', verifyToken, checkAdmin, async (req, res) => {
             return res.status(404).send('User not found');
         }
         res.send(user);
-        console.log(`User ${user.name} has been updated!`);
+        console.log(`${user.name}'s details have been updated!`);
     } catch (error) {
         console.log('User could not be updated', error);
         res.status(400).send({ message: 'User could not be updated', error });
     }
 });
 
-// Delete user
+// Delete user (Need to add to it...  Details like the history needs to be updated)
 router.delete('/:id', verifyToken, checkAdmin, async(req, res) => {
     try {
         const user = await User.findByIdAndDelete(req.params.id);
@@ -151,7 +151,7 @@ router.get('/:id', verifyToken, checkAdmin, async(req, res) => {
             return res.status(404).send('User not found');
         }
         res.send(user);
-        console.log(`User ${user.name} has been fetched!`);
+        console.log(`${user.name} has been requested.`);
     } catch (error) {
         console.log('User could not be fetched');
         res.status(400).send(error);

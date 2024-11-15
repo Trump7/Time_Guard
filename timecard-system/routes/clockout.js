@@ -24,7 +24,7 @@ router.post('/', verifyDeviceToken, async(req, res) => {
 
             await timecard.save();
             res.send(timecard);
-            console.log(`User ${user.name} clocked out at ${timecard.clockOut}.`)
+            console.log(`User ${user.name} clocked out at ${timecard.clockOut.toLocaleString()}.`)
         }
         else{
             res.status(404).send('No active timecard found');
