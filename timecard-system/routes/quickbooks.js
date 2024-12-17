@@ -12,7 +12,7 @@ router.post('/', verifyDeviceToken, async(req, res) => {
         if(user){
             //after finding the user, we need to return the username and pass for quickbooks
             
-            console.log(`Found ${user.username}'s details for QuickBooks!`);
+            console.log(`Found ${user.name}'s details for QuickBooks!`);
             res.status(200).json({username: user.username, password: user.password});
         }
         else{
