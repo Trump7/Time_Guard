@@ -41,30 +41,52 @@ router.post('/copy-template', verifyDeviceToken , async (req, res) => {
     today.setHours(today.getHours() - 1); //Adjusting time for DST
     const formattedDate = today.toISOString().split('T')[0]; //Format date as 'YYYY-MM-DD'
 
-    fs.copyFile(templatePath, destinationPath, async (err) => {
-        if(err){
-            console.error('Error copying template file:', err);
-            return res.status(500).send({message: 'Error copying template file'});
+    try{
+        if(fs.existsSync(destinationPath)){
+            //if current payroll has not been finalized, finalize it
+            console.log('current-payroll.xlsx already exists. Finalizing process begun...');
+            
+            const payrollEntry = await PHistory.findOne({ fileName: 'Current-Payroll.xlsx', isFinal: false});
+            if(!payrollEntry){
+                return res.status(404).send({ message: 'No active payroll found to finalize.' });
+            }
+
+            const temp = new Date(payrollEntry.periodEndDate);
+            temp.setHours(temp.getHours() - 1); //Adjusting time for DST
+            const newFileName = temp.toISOString().split('T')[0];
+            const newFilePath = path.join(payrollFileDir, `${newFileName}.xlsx`);
+
+            //Rename the file (if it fails to rename, it will jump to catch before overwriting the payroll info)
+            await fs.promises.rename(destinationPath, newFilePath);
+                
+            //Update database entry
+            payrollEntry.fileName = `${newFileName}.xlsx`;
+            payrollEntry.filePath = newFilePath;
+            payrollEntry.isFinal = true;
+            await payrollEntry.save();
+
+            console.log(`Payroll finalized. File renamed to ${newFileName}.xlsx`);
         }
+
+        //proceed with copying template
+        await fs.promises.copyFile(templatePath, destinationPath);
         console.log('Template file copied successfully!');
+    
+        const newPayroll = new PHistory({
+            fileName: 'Current-Payroll.xlsx',
+            periodEndDate: formattedDate, //fill out now
+            filePath: destinationPath,
+            isFinal: false
+        });
 
-        try{
-            const newPayroll = new PHistory({
-                fileName: 'Current-Payroll.xlsx',
-                periodEndDate: formattedDate, //fill out now
-                filePath: destinationPath,
-                isFinal: false
-            });
-
-            await newPayroll.save();
-            console.log('New Payroll entry created');
-            res.status(200).send({ message: 'Payroll entry created'});
-        }
-        catch(error){
-            console.error('Error updating database: ', error);
-            return res.status(500).send({message: 'Error updating database'});
-        }
-    });
+        await newPayroll.save();
+        console.log('New Payroll entry created');
+        res.status(200).send({ message: 'Payroll entry created'});
+    }
+    catch(error){
+        console.error('Error occured during copy-template: ', error);
+        return res.status(500).send();
+    }
 });
 
 //For Arduino
@@ -126,45 +148,6 @@ router.get('/is-finalized', verifyDeviceToken, async (req, res) => {
         console.error('Payroll has been finalized, no current payroll exists: ', error);
         res.status(200).send();
     }
-});
-
-//If it has not been finalized, the arduino needs to finalize it
-router.post('/finalize-auto', verifyDeviceToken, async (req, res) => {
-    const currentFilePath = path.join(payrollFileDir, 'Current-Payroll.xlsx');
-    
-    //Get the current date
-    try{
-        const payrollEntry = await PHistory.findOne({ fileName: 'Current-Payroll.xlsx', isFinal: false});
-        if(!payrollEntry){
-            return res.status(404).send({ message: 'No active payroll found to finalize.' });
-        }
-
-        const temp = new Date(payrollEntry.periodEndDate);
-        temp.setHours(temp.getHours() - 1); //Adjusting time for DST
-        const newFileName = temp.toISOString().split('T')[0];
-        
-        const newFilePath = path.join(payrollFileDir, `${newFileName}.xlsx`);
-
-        //Rename the file
-        fs.rename(currentFilePath, newFilePath, async (err) => {
-            if (err) {
-                console.error('Error finalizing payroll:', err);
-                return res.status(500).send({ message: 'Error finalizing payroll.' });
-            }
-
-            payrollEntry.fileName = `${newFileName}.xlsx`;
-            payrollEntry.filePath = newFilePath;
-            payrollEntry.isFinal = true;
-            await payrollEntry.save();
-
-            console.log(`Payroll finalized and renamed to ${newFileName}.xlsx`);
-            res.status(200).send({ message: `Payroll finalized and renamed to ${newFileName}.xlsx` });
-        });
-    }
-    catch(error){
-        console.error('Error during finalization:', error);
-        res.status(500).send({message: 'Failed to finalize data'});
-    } 
 });
 
 
@@ -294,7 +277,6 @@ router.post('/finalize-payroll', verifyToken, checkAdmin, async (req, res) => {
         const temp = new Date(payrollEntry.periodEndDate);
         temp.setHours(temp.getHours() - 1); //Adjusting time for DST
         const newFileName = temp.toISOString().split('T')[0];
-        
         const newFilePath = path.join(payrollFileDir, `${newFileName}.xlsx`);
 
         //Rename the file
