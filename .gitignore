@@ -1,3 +1,5 @@
 
 timecard-system/.env
 timecard-system/Payroll-Files/~$Template.xlsx
+timecard-system/node_modules
+time-frontend/node_modules
