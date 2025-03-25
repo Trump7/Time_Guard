@@ -9,6 +9,7 @@ import HoursModal from '../components/HoursModal';
 import TableExcel from '../components/TableExcel';
 import Cookies from 'js-cookie';
 import '../components/customScrollbar.css';
+import config from '../../../config.json';
 
 const Dashboard = ({ onLogout }) => {
   const prevLogin = Cookies.get('prevLogin');
@@ -45,7 +46,7 @@ const Dashboard = ({ onLogout }) => {
   const [newEmployee, setNewEmployee] = useState({ name: '', short: '', rfid: '', row: '', username: '', password: '' });
   const [errors, setErrors] = useState({});
 
-  const BASE_URL = 'http://192.168.1.122:3000/api';
+  const BASE_URL = `http://${ config.BASE_IP }:3000/api`;
 
   //First fetch employee list (So unnecessary api calls are not made)
   useEffect(() => {

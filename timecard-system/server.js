@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/database');
 const cookieParser = require('cookie-parser');
+const config = require('../config.json');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -12,7 +13,7 @@ connectDB();
 
 //middleware
 app.use(cors({
-    origin: 'http://192.168.1.122',
+    origin: `http://${config.BASE_IP}`,
     credentials: true,
 }));
 app.use(cookieParser());
