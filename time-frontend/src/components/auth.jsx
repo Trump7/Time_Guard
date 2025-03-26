@@ -8,11 +8,25 @@ export const isAuthenticated = () => {
 
     try {
         const decoded = jwtDecode(token);
-        //console.log("Decoded token is: ", decoded);
+        //Checks if the token has expired
         const currentTime = Date.now() / 1000;
         return decoded.exp > currentTime;
     } catch (error) {
         console.error("Error decoding token:", error);
         return false;
     }
+};
+
+export const getUserName = () => {
+    const userName = Cookies.get('userName');
+    console.log(userName);
+    return userName || null;
+};
+
+export const isAdmin = () => {
+    return isAuthenticated() && getUserName() === "Admin";
+};
+
+export const isUser = () => {
+    return isAuthenticated() && getUserName() !== "Admin";
 };
