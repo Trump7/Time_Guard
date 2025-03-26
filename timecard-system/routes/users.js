@@ -48,6 +48,16 @@ router.get('/', verifyToken, checkAdmin, async (req, res) => {
     }
 });
 
+//get all employee names
+router.get('/employees', async(req, res) => {
+    try {
+        const employees = await User.find().select('name');
+        res.json(employees.map((e) => e.name));
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching employees.'});
+    }
+});
+
 //get all history entries
 router.get('/history', verifyToken, checkAdmin, async (req, res) => {
     try {
@@ -155,6 +165,32 @@ router.get('/:id', verifyToken, checkAdmin, async(req, res) => {
     } catch (error) {
         console.log('User could not be fetched');
         res.status(400).send(error);
+    }
+});
+
+// User Login Route
+router.post('/loginUser', async (req, res) => {
+    try{
+        // Taking in the full name and provided pass
+        const { selectedEmployee, password } = req.body;
+
+        // Trying to find account info by full name
+        const user = await User.findOne({ name: selectedEmployee });
+
+        // Shouldnt happen but worth a check
+        if (!user) return res.status(400).send('User not found');
+
+        //need to add bcrypt for future!!
+        const isMatch = password === user.password;
+        if (!isMatch) return res.status(400).send('Invalid credentials');
+
+        const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+        res.json({token, userName: user.username});
+
+    } catch (error) {
+        console.error('Error loggin in user: ', error);
+        res.status(500).send('Error logging in user');
     }
 });
 
