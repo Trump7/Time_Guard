@@ -10,7 +10,6 @@ import '../components/customScrollbar.css';
 import config from '../../../config.json';
 
 const Dashboard = ({ onLogout }) => {
-  const prevLogin = Cookies.get('prevLogin');
   const userName = Cookies.get('userName');
 
   const currentDateTime = new Date();
@@ -21,8 +20,6 @@ const Dashboard = ({ onLogout }) => {
   const [payrollRecord, setPayrollRecord] = useState([]);
 
   const [currentPayroll, setCurrentPayroll] = useState(null);
-  const [payrollStatus, setPayrollStatus] = useState('');
-  const [payrollMessage, setPayrollMessage] = useState('');
 
   const [isTableOpen, setTableOpen] = useState(false);
   const [payrollData, setPayrollData] = useState([]);
@@ -40,20 +37,6 @@ const Dashboard = ({ onLogout }) => {
   const [errors, setErrors] = useState({});
 
   const BASE_URL = `http://${ config.BASE_IP }:3000/api`;
-
-  //First fetch employee list (So unnecessary api calls are not made)
-  useEffect(() => {
-    const fetchEmployees = async () => {
-      try{
-        const response = await axios.get(`${BASE_URL}/users`, {withCredentials: true,});
-        setEmployees(response.data);
-      } catch(error) {
-        console.error('Error fetching employees:', error);
-      }
-    };
-
-    fetchEmployees();
-  }, []);
 
   useEffect(() => {
     //Once all employees are loaded in, load history
@@ -98,50 +81,15 @@ const Dashboard = ({ onLogout }) => {
   useEffect(() => {
     const fetchPayroll = async () => {
       try{
-        const response = await axios.get(`${BASE_URL}/payroll/payroll-history`, {withCredentials: true,});
+        //const response = await axios.get(`${BASE_URL}/payroll/payroll-history`, {withCredentials: true,});
         
-        setPayrollRecord(response.data);
+        //setPayrollRecord(response.data);
       } catch(error) {
         console.error('Error fetching Payroll history:', error);
       }
     };
 
     fetchPayroll();
-  }, [liveUpdates]);
-
-
-  useEffect(() => {
-    const fetchCurrentPayroll = async () => {
-      try{
-        const response = await axios.get(`${BASE_URL}/payroll/current-payroll`, {withCredentials: true,});
-        const payroll = response.data;
-
-        if(payroll && payroll.length > 0){
-          const periodEndDate = new Date(payroll[0].periodEndDate);
-                
-          const periodStartDate = new Date(Date.UTC(periodEndDate.getUTCFullYear(), periodEndDate.getUTCMonth(), periodEndDate.getUTCDate()));
-          periodStartDate.setUTCDate(periodStartDate.getUTCDate() - ((periodStartDate.getUTCDay() + 4) % 7));
-
-          const formattedEndDate = periodEndDate.toLocaleDateString('en-US', { timeZone: 'UTC' });
-          const formattedStartDate = periodStartDate.toLocaleDateString('en-US', { timeZone: 'UTC' });
-          
-          setCurrentPayroll(payroll);
-          setPayrollMessage(`Payroll for ${formattedStartDate} to ${formattedEndDate}`);
-          setPayrollStatus('Pending');
-        }
-        else{
-          setCurrentPayroll(null);
-          setPayrollMessage('There is no new Payroll sheet to edit.');
-          setPayrollStatus('Completed');
-        }
-        
-      } catch(error) {
-        console.error('Error fetching Payroll data:', error);
-        setPayrollMessage('Error fetching payroll data');
-      }
-    };
-
-    fetchCurrentPayroll();
   }, [liveUpdates]);
 
   const filteredUpdates = liveUpdates
@@ -179,18 +127,6 @@ const Dashboard = ({ onLogout }) => {
     
       return dateB - dateA; //Sort by most recent
     });
-  
-
-  const handleEditClick = async () => {
-    try{
-      const response = await axios.get(`${BASE_URL}/payroll/get-payroll-data`, {withCredentials: true,});
-      setPayrollData(response.data);
-      setTableOpen(true);
-    }
-    catch(error){
-      console.error('Error fetching payroll data: ', error);
-    }
-  };
 
 
   const handleCloseModal = () => {
@@ -259,55 +195,57 @@ const Dashboard = ({ onLogout }) => {
           }
         }
       }
-    } else if(modalType === 'message') {
-        if(selectedEmployee){
-          try{
-            //Delete employee
-            await axios.delete(`${BASE_URL}/users/${selectedEmployee._id}`, {withCredentials: true,});
-            setEmployees(employees.filter(emp => emp._id !== selectedEmployee._id));
-            handleCloseModal();
-          } catch(error) {
-            console.error('Error deleting employee:', error);
-          }
-        }
-        else{
-          await axios.post(`${BASE_URL}/payroll/finalize-payroll`, null, {withCredentials: true,});
-          setCurrentPayroll(null);
-          handleCloseModal();
-          window.location.reload();
-        }
-        
+    } else if(modalType === 'message') {        
     }
   };
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-auto min-w-[1240px]">
-      <Header isLoggedIn={true} userName={userName} prevLogin={prevLogin} onLogout={onLogout} />
+      <Header isLoggedIn={true} userName={userName} onLogout={onLogout} />
       <div className="flex flex-grow justify-center p-6 bg-main-background space-x-4 overflow-auto">
 
         {/* Middle Column */}
         <div className="flex flex-col justify-between items-center flex-grow min-w-[350px] max-w-[400px]">
           
-          {/* Payroll history top box */}
-          <div className="flex flex-col bg-white p-6 rounded-3xl shadow-md w-full h-full min-h-[300px]">
+          {/* Pay History top box */}
+          <div className="flex flex-col mb-6 bg-white p-6 rounded-3xl shadow-md w-full h-full min-h-[300px]">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-2xl font-orbitron font-bold">Pay Period</h3>
             </div>
+            <div className="overflow-y-auto flex-grow scrollbar p-2">
+              {/* Just an example of what to see for days of the week */}
+              <div className="font-segment text-xl flex justify-between items-center bg-gray-100 p-1 mb-3 rounded-xl shadow-md">
+                <span>Monday</span>
+                <div>
+                  <span>9:00:00 AM - 5:00:00 PM</span> <span>✅</span>
+                </div>
+              </div>
+              <div className="font-segment text-xl flex justify-between items-center bg-gray-100 p-1 mb-3 rounded-xl shadow-md">
+                <span>Tuesday</span>
+                <div>
+                  <span>12:00:00 AM - 12:00:00 AM</span> <span>⚠️</span>
+                </div>
+              </div>
+
+            </div>
+            {/* Total Hours for the pay period */}
+            <h3 className="text-xl font-orbitron">Total Hours:</h3>
           </div>
 
-          {/* Time and date in middle */}
-          <div className="flex flex-col items-center justify-center flex-grow mb-4 mt-4">
-          </div>
-
-          {/* Export Edit box */}
-          <div className="flex flex-col bg-white p-6 rounded-3xl shadow-md w-full h-full min-h-[300px]">
+          {/* Account Info box */}
+          <div className="flex flex-col mt-6 bg-white p-6 rounded-3xl shadow-md w-full h-full min-h-[300px]">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-2xl font-orbitron font-bold">Account Info</h3>
             </div>
+              <p className="mb-4 font-orbitron">Full Name: </p>
+              <p className="mb-4 font-orbitron">Short Name: </p>
+              <p className="mb-4 font-orbitron">QB User: </p>
+              <p className="mb-4 font-orbitron">QB Pass: </p>
+              <button className="bg-button-color rounded-3xl text-black w-3/5 py-2 shadow-md hover:bg-button-hover font-orbitron">Edit Account</button>
           </div>
         </div>
 
-        {/* Live Updates Box (Right Side)*/}
+        {/* Hours History Box (Right Side)*/}
         <div className="flex flex-col bg-white p-6 rounded-3xl shadow-md min-w-[400px] max-w-[400px] min-h-[710px] flex-grow">
           <div className='flex justify-between items-center mb-3'>
             <h3 className="text-2xl font-orbitron font-bold">Hours History</h3>
@@ -359,42 +297,8 @@ const Dashboard = ({ onLogout }) => {
           </div>
         </div>
       </div>
+    {/* Where modals will go! */}
 
-      <Modal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        title={
-          modalType === 'edit'
-            ? 'Edit Employee'
-            : modalType === 'add'
-            ? 'Add Employee'
-            : modalType === 'message' && selectedEmployee
-            ? 'Delete Employee'
-            : 'Finalize Payroll'
-        }
-        onSubmit={handleSubmit}
-        errors={errors}
-        values={newEmployee}
-        onChange={handleChange}
-        fields={[
-          { name: 'name', type: 'text', placeholder: 'Full Name' },
-          { name: 'short', type: 'text', placeholder: 'Short Name' },
-          { name: 'rfid', type: 'text', placeholder: 'RFID Number' },
-          { name: 'row', type: 'text', placeholder: 'Payroll Row Number'},
-          { name: 'username', type: 'text', placeholder: 'Quickbooks User'},
-          { name: 'password', type: 'text', placeholder: 'Quickbooks Pass'}
-        ]}
-        modalType={modalType}
-        message={modalMessage}
-      />
-      {isTableOpen && (
-        <TableExcel
-          showModal={isTableOpen}
-          onClose={() => setTableOpen(false)}
-          payrollData={payrollData}
-          onSave={handleEditSave}
-        />
-      )}
     </div>
   );
 };
