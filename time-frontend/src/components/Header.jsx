@@ -6,7 +6,7 @@ const Header = ({ isLoggedIn, userName, prevLogin }) => {
   let prevLoginDate = '';
   let prevLoginTime = '';
   
-  if(isLoggedIn){
+  if(isLoggedIn && prevLogin){
     const prevLoginObj = new Date(prevLogin);
     prevLoginDate = prevLoginObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     prevLoginTime = prevLoginObj.toLocaleTimeString('en-US');
@@ -18,10 +18,13 @@ const Header = ({ isLoggedIn, userName, prevLogin }) => {
       <h1 className="text-5xl font-BTTF">TIME MACHINE</h1>
       {isLoggedIn ? (
         <>
-        <div className="flex-grow text-center">
-          <span className="text-md font-orbitron">Last Login: </span>
-          <span className="text-xl font-segment">{prevLoginDate} {prevLoginTime}</span>
-        </div>
+        {prevLogin ? (
+          <div className="flex-grow text-center">
+            <span className="text-md font-orbitron">Last Login: </span>
+            <span className="text-xl font-segment">{prevLoginDate} {prevLoginTime}</span>
+          </div>
+        ) : <div className="flex-grow" /> }
+        
         <div className="flex items-center ml-auto">
           <span className="text-xl mr-4 font-orbitron">Welcome {userName}</span>
           <button
