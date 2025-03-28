@@ -19,7 +19,6 @@ export const isAuthenticated = () => {
 
 export const getUserName = () => {
     const userName = Cookies.get('userName');
-    console.log(userName);
     return userName || null;
 };
 
