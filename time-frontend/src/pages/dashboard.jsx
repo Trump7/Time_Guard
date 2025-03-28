@@ -84,7 +84,7 @@ const Dashboard = ({ onLogout }) => {
               return {
                 id: entry._id,
                 name: user ? user.name : 'Unknown User',
-                hoursAdded: entry.hours,
+                hoursAdded: entry.hoursAdded,
                 date: new Date(entry.date).toLocaleDateString('en-US'),
                 message: entry.message,
                 status: entry.status,
@@ -530,10 +530,15 @@ const Dashboard = ({ onLogout }) => {
                   <>
                     <div className="flex justify-between">
                       <span>{update.name}</span>
-                      <span>{update.hoursAdded} {update.date}</span>
+                      <span>{update.date}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      {/* <span> {update.hoursAdded} Hours Added</span> */}
+                      <span>{update.message}</span> 
                     </div>
                     <div className="flex justify-between items-center">
-                      <span>{update.message}</span> 
+                    <span> {update.hoursAdded} Hours</span>
+                      {/* <span>{update.message}</span>  */}
                       <span>
                         {update.status === 'Completed' && '✅'}
                       </span>
