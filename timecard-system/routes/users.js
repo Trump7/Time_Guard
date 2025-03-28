@@ -58,6 +58,19 @@ router.get('/employees', async(req, res) => {
     }
 });
 
+//get a personalized history
+router.get('/my-history', verifyToken, async(req, res) => {
+    try{
+        const userId = req.user.id;
+
+        const entries = await Timecard.find({ userId }).sort({ clockIn: -1 });
+
+        res.json(entries);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+});
+
 //get all history entries
 router.get('/history', verifyToken, checkAdmin, async (req, res) => {
     try {
@@ -186,7 +199,7 @@ router.post('/loginUser', async (req, res) => {
 
         const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-        res.json({token, userName: user.username});
+        res.json({token, userName: user.name});
 
     } catch (error) {
         console.error('Error loggin in user: ', error);

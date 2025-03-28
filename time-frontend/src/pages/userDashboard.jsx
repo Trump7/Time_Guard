@@ -39,34 +39,38 @@ const Dashboard = ({ onLogout }) => {
   const BASE_URL = `http://${ config.BASE_IP }:3000/api`;
 
   useEffect(() => {
-    //Once all employees are loaded in, load history
-    if(employees.length > 0) {
+    //load history for specific user
       const fetchEntries = async () => {
         try{
-          const response = await axios.get(`${BASE_URL}/users/history`, {withCredentials: true,});
+          const response = await axios.get(`${BASE_URL}/users/my-history`, {withCredentials: true,});
+
           const updates = response.data.map((entry) => {
-            const user = employees.find((emp) => emp._id.toString() === entry.userId.toString());
             if(entry.clockIn){
-              return {
-                id: entry._id,
-                name: user ? user.name : 'Unknown User',
-                date: new Date(entry.clockIn).toLocaleDateString('en-US'),
-                inTime: new Date(entry.clockIn).toLocaleTimeString('en-US'),
-                outTime: entry.clockOut ? new Date(entry.clockOut).toLocaleTimeString('en-US') : 'N/A',
-                status: entry.status,
-              };
+              const clockInTime = new Date(entry.clockIn);
+              const clockOutTime = entry.clockOut ? new Date(entry.clockOut) : null;
+
+              const hours = clockOutTime ? ((clockOutTime - clockInTime) / (1000 * 60 * 60)).toFixed(2) : "In Progress";
+
+                return {
+                  id: entry._id,
+                  date: clockInTime.toLocaleDateString('en-US'),
+                  inTime: clockInTime.toLocaleTimeString('en-US'),
+                  outTime: clockOutTime ? clockOutTime.toLocaleTimeString('en-US') : 'N/A',
+                  hours,
+                  status: entry.status,
+                };
             }
             else{
               return {
                 id: entry._id,
-                name: user ? user.name : 'Unknown User',
-                hoursAdded: entry.hours,
+                hoursAdded: entry.hoursAdded,
                 date: new Date(entry.date).toLocaleDateString('en-US'),
                 message: entry.message,
                 status: entry.status,
               };
             }
           });
+          
           setLiveUpdates(updates);
         } catch(error) {
           console.error('Error fetching history entries:', error);
@@ -74,9 +78,7 @@ const Dashboard = ({ onLogout }) => {
       };
 
       fetchEntries();
-    }
-  }, [employees]); 
-  //fetch entries only when employees are loaded  
+  }, []); 
 
   useEffect(() => {
     const fetchPayroll = async () => {
@@ -96,11 +98,10 @@ const Dashboard = ({ onLogout }) => {
     .filter(liveUpdates => {
       const searchTerm  = liveSearchTerm.toLocaleLowerCase();
 
-      //Checking if search term matches a name or date
-      const nameMatch = liveUpdates.name.toLowerCase().includes(searchTerm) || false;
+      //Checking if search term matches a date
       const dateMatch = liveUpdates.date.includes(searchTerm) || false;
 
-      return nameMatch || dateMatch;
+      return dateMatch;
     })
     .sort((a, b) => {
       const dateA = a.outTime !== 'N/A' && a.outTime
@@ -147,10 +148,6 @@ const Dashboard = ({ onLogout }) => {
 
     if(modalType === 'edit' || modalType === 'add') {
       if(!newEmployee.name) newErrors.name = 'Full Name is required';
-      if(!newEmployee.rfid) newErrors.rfid = 'RFID Number is required';
-      if(newEmployee.rfid.includes(' ')) newErrors.rfid = 'RFID Number should not contain spaces';
-      if(!newEmployee.row) newErrors.row = 'Row Number is required';
-      if(rowAsString.includes(' ')) newErrors.row = 'Row Number should not contain spaces';
       if(!newEmployee.short) newErrors.short = 'Short Name is required';
       if(newEmployee.short.length > 7) newErrors.short = 'Short Name should be at most 7 characters';
       
@@ -163,24 +160,11 @@ const Dashboard = ({ onLogout }) => {
             //Update employee
             const response = await axios.put(`${BASE_URL}/users/${selectedEmployee._id}`, newEmployee, {withCredentials: true,});
             setEmployees(employees.map(emp => (emp._id === selectedEmployee._id ? response.data : emp)));
-          } 
-          else if(modalType === 'add') {
-            //Add new employee
-            const response = await axios.post(`${BASE_URL}/users`, newEmployee, {withCredentials: true,});
-            setEmployees([...employees, response.data]);
           }
           handleCloseModal();
         } catch(error) {
           if(error.response.data.message){
             const errorMessage = error.response.data.message;
-            //check if rfid number is currently used
-            if(errorMessage.includes('RFID')){
-              newErrors.rfid = 'RFID number already exists';
-            }
-            //check if row number is currently used
-            if(errorMessage.includes('Row')){
-              newErrors.row = 'Row number already exists';
-            }
             if(errorMessage.includes('Quickbooks')){
               newErrors.username = 'Quickbooks username already exists'
             }
@@ -258,15 +242,17 @@ const Dashboard = ({ onLogout }) => {
             onChange={(e) => setLiveSearchTerm(e.target.value)}
           />
 
-
+          {/* Has all of history entires. */}
           <div className="overflow-y-auto flex-grow scrollbar p-2">
             {filteredUpdates.map(update => (
               <div key={update.id} className="text-xl font-segment flex flex-col bg-gray-100 p-2 mb-3 rounded-xl shadow-md">
                 {update.inTime ? (
                   <>
                     <div className="flex justify-between">
-                      <span>{update.name}</span>
+                      {/* Name is no longer needed as there is only one user*/}
+                      {/* Need to add calc for total hours */}
                       <span>{update.date}</span>
+                      <span>{update.hours} Hours </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span>In: {update.inTime}</span> 
@@ -281,8 +267,8 @@ const Dashboard = ({ onLogout }) => {
                 ) : (
                   <>
                     <div className="flex justify-between">
-                      <span>{update.name}</span>
-                      <span>{update.hoursAdded} {update.date}</span>
+                      <span>{update.date}</span>
+                      <span>{update.hoursAdded} Hours </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span>{update.message}</span> 
