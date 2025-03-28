@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Header from '../components/Header';
 import InputField from '../components/InputField';
 import Modal from '../components/Modal';
-import TableExcel from '../components/TableExcel';
 import Cookies from 'js-cookie';
 import '../components/customScrollbar.css';
 import config from '../../../config.json';
@@ -16,24 +14,15 @@ const Dashboard = ({ onLogout }) => {
   const formattedDate = currentDateTime.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   const formattedTime = currentDateTime.toLocaleTimeString('en-US');
 
-  const [employees, setEmployees] = useState([]);
-  const [payrollRecord, setPayrollRecord] = useState([]);
-
-  const [currentPayroll, setCurrentPayroll] = useState(null);
-
-  const [isTableOpen, setTableOpen] = useState(false);
-  const [payrollData, setPayrollData] = useState([]);
 
   const [liveUpdates, setLiveUpdates] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
   const [liveSearchTerm, setLiveSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('');
   const [modalMessage, setModalMessage] = useState('');
 
+  const [userInfo, setUserInfo] = useState({name: '', short: '', username: '', password: ''});
 
-  const [selectedEmployee, setSelectedEmployee] = useState(null);
-  const [newEmployee, setNewEmployee] = useState({ name: '', short: '', rfid: '', row: '', username: '', password: '' });
   const [errors, setErrors] = useState({});
 
   const BASE_URL = `http://${ config.BASE_IP }:3000/api`;
@@ -81,18 +70,18 @@ const Dashboard = ({ onLogout }) => {
   }, []); 
 
   useEffect(() => {
-    const fetchPayroll = async () => {
+    const fetchUserInfo = async () => {
       try{
-        //const response = await axios.get(`${BASE_URL}/payroll/payroll-history`, {withCredentials: true,});
-        
-        //setPayrollRecord(response.data);
+        const response = await axios.get(`${BASE_URL}/users/myEmp`, { withCredentials: true});
+        setUserInfo(response.data);
+
       } catch(error) {
-        console.error('Error fetching Payroll history:', error);
+        console.error('Error fetching user info:', error);
       }
     };
 
-    fetchPayroll();
-  }, [liveUpdates]);
+    fetchUserInfo();
+  }, []);
 
   const filteredUpdates = liveUpdates
     .filter(liveUpdates => {
@@ -132,54 +121,27 @@ const Dashboard = ({ onLogout }) => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setSelectedEmployee(null);
     setErrors({});
-  };
-
-  const handleChange = (field, value) => {
-    setNewEmployee({ ...newEmployee, [field]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     let newErrors = {};
 
-    const rowAsString = String(newEmployee.row);
-
-    if(modalType === 'edit' || modalType === 'add') {
-      if(!newEmployee.name) newErrors.name = 'Full Name is required';
-      if(!newEmployee.short) newErrors.short = 'Short Name is required';
-      if(newEmployee.short.length > 7) newErrors.short = 'Short Name should be at most 7 characters';
+    if(modalType === 'editAccount') {
+      if(!userInfo.name) newErrors.name = 'Full Name is required';
+      if(!userInfo.short) newErrors.short = 'Short Name is required';
+      if(userInfo.short.length > 7) newErrors.short = 'Short Name should be at most 7 characters';
       
-
       setErrors(newErrors);
-
       if(Object.keys(newErrors).length === 0) {
         try{
-          if(selectedEmployee && modalType === 'edit') {
-            //Update employee
-            const response = await axios.put(`${BASE_URL}/users/${selectedEmployee._id}`, newEmployee, {withCredentials: true,});
-            setEmployees(employees.map(emp => (emp._id === selectedEmployee._id ? response.data : emp)));
-          }
+          await axios.put(`${BASE_URL}/users/upEmp`, userInfo, {withCredentials: true});
           handleCloseModal();
         } catch(error) {
-          if(error.response.data.message){
-            const errorMessage = error.response.data.message;
-            if(errorMessage.includes('Quickbooks')){
-              newErrors.username = 'Quickbooks username already exists'
-            }
-
-            setErrors(newErrors);
-
-            //Reload employee object
-            setNewEmployee({...newEmployee});
-          }
-          else{
-            console.error('Error saving employee:', error);
-          }
+          console.error('Error updating account info:', error);
         }
       }
-    } else if(modalType === 'message') {        
     }
   };
 
@@ -221,11 +183,17 @@ const Dashboard = ({ onLogout }) => {
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-2xl font-orbitron font-bold">Account Info</h3>
             </div>
-              <p className="mb-4 font-orbitron">Full Name: </p>
-              <p className="mb-4 font-orbitron">Short Name: </p>
-              <p className="mb-4 font-orbitron">QB User: </p>
-              <p className="mb-4 font-orbitron">QB Pass: </p>
-              <button className="bg-button-color rounded-3xl text-black w-3/5 py-2 shadow-md hover:bg-button-hover font-orbitron">Edit Account</button>
+              <p className="mb-4 font-orbitron">Full Name: {userInfo.name}</p>
+              <p className="mb-4 font-orbitron">Short Name: {userInfo.short}</p>
+              <p className="mb-4 font-orbitron">QB User: {userInfo.username}</p>
+              <p className="mb-4 font-orbitron">QB Pass: <span className="text-gray-500 italic">Hidden</span></p>
+              <button className="bg-button-color rounded-3xl text-black w-3/5 py-2 shadow-md hover:bg-button-hover font-orbitron"
+                onClick={() => {
+                  setModalType('editAccount');
+                  setIsModalOpen(true);
+                }}>
+                Edit Account
+              </button>
           </div>
         </div>
 
@@ -284,7 +252,24 @@ const Dashboard = ({ onLogout }) => {
         </div>
       </div>
     {/* Where modals will go! */}
-
+    {modalType === 'editAccount' && (
+      <Modal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        title="Edit Account Info"
+        onSubmit={handleSubmit}
+        errors={errors}
+        values={userInfo}
+        onChange={(field, value) => setUserInfo({ ...userInfo, [field]: value })}
+        fields={[
+          { name: 'name', type: 'text', placeholder: 'Full Name' },
+          { name: 'short', type: 'text', placeholder: 'Short Name' },
+          { name: 'username', type: 'text', placeholder: 'QB Username' },
+          { name: 'password', type: 'password', placeholder: 'QB Password' }
+        ]}
+        modalType="edit"
+      />
+    )}
     </div>
   );
 };

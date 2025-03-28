@@ -48,6 +48,41 @@ router.get('/', verifyToken, checkAdmin, async (req, res) => {
     }
 });
 
+//get one employees info
+router.get('/myEmp', verifyToken, async(req, res) => {
+    try{
+        const user = await User.findById(req.user.id).select('name short username password');
+        if(!user) return res.status(404).json({ message: 'User not found'});
+
+        res.json(user);
+    } catch (error){
+        res.status(500).json({ message: 'Server Error'});
+    }
+})
+
+//Edit non-critical user account info
+router.put('/upEmp', verifyToken, async (req, res) => {
+    const { name, short, username, password } = req.body;
+    const userId = req.user._id;
+
+    try {
+        const updatedUser = await User.findByIdAndUpdate(
+            userId, 
+            { name, short, username, password }, 
+            { new: true} );
+        if(!updatedUser) {
+            return res.status(404).send('User not found...');
+        }
+
+        res.send(updatedUser);
+        console.log(`${updatedUser.name}'s account info was updated.`);
+    } catch (error) {
+
+        console.log('User could not be updated', error);
+        res.status(400).send({ message: 'User could not be updated', error });
+    }
+});
+
 //get all employee names
 router.get('/employees', async(req, res) => {
     try {
