@@ -63,7 +63,7 @@ router.get('/myEmp', verifyToken, async(req, res) => {
 //Edit non-critical user account info
 router.put('/upEmp', verifyToken, async (req, res) => {
     const { name, short, username, password } = req.body;
-    const userId = req.user._id;
+    const userId = req.user.id;
 
     try {
         const updatedUser = await User.findByIdAndUpdate(

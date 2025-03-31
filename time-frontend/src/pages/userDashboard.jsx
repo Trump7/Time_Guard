@@ -21,6 +21,7 @@ const Dashboard = ({ onLogout }) => {
   const [modalType, setModalType] = useState('');
   const [modalMessage, setModalMessage] = useState('');
 
+  const [changedUserInfo, setChangedUserInfo] = useState({name: '', short: '', username: '', password: ''});
   const [userInfo, setUserInfo] = useState({name: '', short: '', username: '', password: ''});
 
   const [errors, setErrors] = useState({});
@@ -129,14 +130,15 @@ const Dashboard = ({ onLogout }) => {
     let newErrors = {};
 
     if(modalType === 'editAccount') {
-      if(!userInfo.name) newErrors.name = 'Full Name is required';
-      if(!userInfo.short) newErrors.short = 'Short Name is required';
-      if(userInfo.short.length > 7) newErrors.short = 'Short Name should be at most 7 characters';
+      if(!changedUserInfo.name) newErrors.name = 'Full Name is required';
+      if(!changedUserInfo.short) newErrors.short = 'Short Name is required';
+      if(changedUserInfo.short.length > 7) newErrors.short = 'Short Name should be at most 7 characters';
       
       setErrors(newErrors);
       if(Object.keys(newErrors).length === 0) {
         try{
-          await axios.put(`${BASE_URL}/users/upEmp`, userInfo, {withCredentials: true});
+          await axios.put(`${BASE_URL}/users/upEmp`, changedUserInfo, {withCredentials: true});
+          setUserInfo(changedUserInfo);
           handleCloseModal();
         } catch(error) {
           console.error('Error updating account info:', error);
@@ -153,7 +155,7 @@ const Dashboard = ({ onLogout }) => {
         {/* Middle Column */}
         <div className="flex flex-col justify-between items-center flex-grow min-w-[350px] max-w-[400px]">
           
-          {/* Pay History top box */}
+          {/* Pay Period top box */}
           <div className="flex flex-col mb-6 bg-white p-6 rounded-3xl shadow-md w-full h-full min-h-[300px]">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-2xl font-orbitron font-bold">Pay Period</h3>
@@ -189,6 +191,7 @@ const Dashboard = ({ onLogout }) => {
               <p className="mb-4 font-orbitron">QB Pass: <span className="text-gray-500 italic">Hidden</span></p>
               <button className="bg-button-color rounded-3xl text-black w-3/5 py-2 shadow-md hover:bg-button-hover font-orbitron"
                 onClick={() => {
+                  setChangedUserInfo(userInfo);
                   setModalType('editAccount');
                   setIsModalOpen(true);
                 }}>
@@ -259,8 +262,8 @@ const Dashboard = ({ onLogout }) => {
         title="Edit Account Info"
         onSubmit={handleSubmit}
         errors={errors}
-        values={userInfo}
-        onChange={(field, value) => setUserInfo({ ...userInfo, [field]: value })}
+        values={changedUserInfo}
+        onChange={(field, value) => setChangedUserInfo({ ...changedUserInfo, [field]: value })}
         fields={[
           { name: 'name', type: 'text', placeholder: 'Full Name' },
           { name: 'short', type: 'text', placeholder: 'Short Name' },
