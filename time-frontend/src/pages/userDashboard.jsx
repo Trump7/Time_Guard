@@ -21,6 +21,9 @@ const Dashboard = ({ onLogout }) => {
   const [modalType, setModalType] = useState('');
   const [modalMessage, setModalMessage] = useState('');
 
+  const [payPeriodEntries, setPayPeriodEntries] = useState([]);
+  const [payPeriodTotal, setPayPeriodTotal] = useState(0);
+
   const [changedUserInfo, setChangedUserInfo] = useState({name: '', short: '', username: '', password: ''});
   const [userInfo, setUserInfo] = useState({name: '', short: '', username: '', password: ''});
 
@@ -69,6 +72,39 @@ const Dashboard = ({ onLogout }) => {
 
       fetchEntries();
   }, []); 
+
+  useEffect(() => {
+    const now = new Date();
+
+    const day = now.getDay(); //Sunday = 0, etc
+    const daysSinceWed = (day >= 3) ? day - 3 : 7 - (3 - day);
+    const startOfPayPeriod = new Date(now);
+
+    //Wednesday of pay period
+    startOfPayPeriod.setDate(now.getDate() - daysSinceWed);
+    startOfPayPeriod.setHours( 0, 0, 0, 0);
+
+    //Tuesday of pay period (next week)
+    const endOfPayPeriod = new Date(startOfPayPeriod);
+    endOfPayPeriod.setDate(startOfPayPeriod.getDate() + 6);
+    endOfPayPeriod.setHours(23, 59, 59, 999);
+
+    //Filter current history entries to see if it falls in pay period
+    const filtered = liveUpdates.filter(entry => {
+      const entryDate = new Date(entry.date);
+      return entryDate >= startOfPayPeriod && entryDate <= endOfPayPeriod;
+    });
+
+    //Add up all hours gained for pay period
+    const total = filtered.reduce((sum, entry) => {
+      const hrs = entry.hours || entry.hoursAdded || 0;
+      return sum + (typeof hrs === 'number' ? hrs : parseFloat(hrs) || 0);
+    }, 0);
+
+    setPayPeriodEntries(filtered);
+    setPayPeriodTotal(total.toFixed(2));
+
+  }, [liveUpdates]);
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -162,22 +198,30 @@ const Dashboard = ({ onLogout }) => {
             </div>
             <div className="overflow-y-auto flex-grow scrollbar p-2">
               {/* Just an example of what to see for days of the week */}
-              <div className="font-segment text-xl flex justify-between items-center bg-gray-100 p-1 mb-3 rounded-xl shadow-md">
-                <span>Monday</span>
-                <div>
-                  <span>9:00:00 AM - 5:00:00 PM</span> <span>✅</span>
-                </div>
-              </div>
-              <div className="font-segment text-xl flex justify-between items-center bg-gray-100 p-1 mb-3 rounded-xl shadow-md">
-                <span>Tuesday</span>
-                <div>
-                  <span>12:00:00 AM - 12:00:00 AM</span> <span>⚠️</span>
-                </div>
-              </div>
+              {payPeriodEntries.map((entry) => {
+                const day = new Date(entry.date).toLocaleDateString('en-US', { weekday: 'long' });
 
+                return (
+                  <div key={entry.id} className="font-segment text-xl flex justify-between items-center bg-gray-100 p-1 mb-3 rounded-xl shadow-md">
+                    <span>{day}</span>
+                    <div>
+                      {entry.inTime && entry.outTime ? (
+                        <span>{entry.inTime} - {entry.outTime}</span>
+                      ) : (
+                        <span>{entry.hours || entry.hoursAdded} Hours</span>
+                      )}
+                      <span className="ml-2">
+                        {entry.status === 'Active' && '⏳'}
+                        {entry.status === 'Completed' && '✅'}
+                        {entry.status === 'Did not clock out' && '⚠️'}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
             {/* Total Hours for the pay period */}
-            <h3 className="text-xl font-orbitron">Total Hours:</h3>
+            <h3 className="text-xl font-orbitron">Total Hours: {payPeriodTotal}</h3>
           </div>
 
           {/* Account Info box */}
