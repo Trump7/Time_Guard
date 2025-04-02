@@ -7,8 +7,10 @@ const User = require('../models/User');
 const TimeAdd = require('../models/TimeAdd');
 const PHistory = require('../models/PHistory');
 const { verifyToken, checkAdmin, verifyDeviceToken } = require('../middleware/authMiddleware');
+const {exec} = require('child_process');
 
 const payrollFileDir = path.join(__dirname, '..', 'Payroll-Files');
+
 
 router.get('/download-excel', verifyToken, checkAdmin, (req, res) => {
     const filePath = req.query.path;
@@ -21,16 +23,69 @@ router.get('/download-excel', verifyToken, checkAdmin, (req, res) => {
     });
 });
 
-//router.get('/download-pdf/:fileName', async (req, res) => {
-//    const fileName = req.params.fileName;
-//    const filePath = path.join(__dirname, 'payroll-files', fileName);
+//add verifyToken and checkAdmin once testing is done.
+router.get('/download-pdf/:fileName', async (req, res) => {
+    const excelPath = req.params.path;
+    if (!excelPath.endsWith('.xlsx')) {
+        return res.status(400).send({ message: 'Invalid Excel file path.' });
+    }
 
-//    res.download(pdfFilePath, pdfFileName, (err) => {
-//        if (err) {
-//            res.status(500).send({ message: 'Error downloading PDF file.' });
-//        }
-//    });
-//});
+    const pdfPath = excelPath.replace('.xlsx', '.pdf');
+    const pdfFileName = path.basename(pdfPath);
+
+    res.download(pdfPath, pdfFileName, (err) => {
+        if (err) {
+            console.error('Error downloading PDF:', err);
+            res.status(500).send({ message: 'Error downloading PDF file.' });
+        }
+    });
+});
+
+// // Convert all previous xlsx files to pdfs...
+// router.post('/convert-all-pdfs', async (req, res) => {
+//     const pythonScriptPath = path.join(__dirname, '..', 'scripts', 'xlsx-pdf.py');
+//     const finalizedEntries = await PHistory.find({ isFinal: true });
+
+//     let convertedCount = 0;
+//     let skippedCount = 0;
+//     let errors = [];
+
+//     for (const entry of finalizedEntries) {
+//         const excelPath = entry.filePath;
+//         const pdfPath = excelPath.replace('.xlsx', '.pdf');
+
+//         if (fs.existsSync(pdfPath)) {
+//             skippedCount++;
+//             continue;
+//         }
+
+//         const command = `python "${pythonScriptPath}" "${excelPath}" "${pdfPath}"`;
+
+//         try {
+//             await new Promise((resolve, reject) => {
+//                 exec(command, (error, stdout, stderr) => {
+//                     if (error) {
+//                         console.error(`Failed to convert: ${excelPath}`, stderr);
+//                         errors.push({ file: excelPath, error: stderr });
+//                         return reject(error);
+//                     }
+//                     console.log(`Converted: ${excelPath} → ${pdfPath}`);
+//                     convertedCount++;
+//                     resolve();
+//                 });
+//             });
+//         } catch (err) {
+//             // Already handled inside the promise
+//         }
+//     }
+
+//     res.json({
+//         message: `Conversion completed.`,
+//         converted: convertedCount,
+//         skipped: skippedCount,
+//         errors
+//     });
+// });
 
 //For Arduino
 router.post('/copy-template', verifyDeviceToken , async (req, res) => {
@@ -279,6 +334,10 @@ router.post('/finalize-payroll', verifyToken, checkAdmin, async (req, res) => {
         const newFileName = temp.toISOString().split('T')[0];
         const newFilePath = path.join(payrollFileDir, `${newFileName}.xlsx`);
 
+        const pythonScriptPath = path.join(__dirname, '..', 'scripts', 'xlsx-pdf.py');
+        const pdfPath = path.join(payrollFileDir, `${newFileName}.pdf`);
+        const command = `python "${pythonScriptPath}" "${newFilePath}" "${pdfPath}"`;
+
         //Rename the file
         fs.rename(currentFilePath, newFilePath, async (err) => {
             if (err) {
@@ -292,7 +351,17 @@ router.post('/finalize-payroll', verifyToken, checkAdmin, async (req, res) => {
             await payrollEntry.save();
 
             console.log(`Payroll finalized and renamed to ${newFileName}.xlsx`);
-            res.status(200).send({ message: `Payroll finalized and renamed to ${newFileName}.xlsx` });
+
+            //After payroll has been finalized, convert to PDF
+            exec(command, (error, stdout, stderr) => {
+                if(error){
+                    console.error(`PDF Export Error: ${stderr}`);
+                    return res.status(500).send({ message: 'Payroll finalized, but PDF export failed.'});
+                }
+
+                console.log(`PDF Export Success: ${stdout}`);
+                res.status(200).send({ message: `Payroll finalized and PDF exported as ${newFileName}.xlsx/.pdf` });
+            });
         });
     }
     catch(error){
