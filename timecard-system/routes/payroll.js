@@ -42,50 +42,50 @@ router.get('/download-pdf/:fileName', async (req, res) => {
 });
 
 // // Convert all previous xlsx files to pdfs...
-// router.post('/convert-all-pdfs', async (req, res) => {
-//     const pythonScriptPath = path.join(__dirname, '..', 'scripts', 'xlsx-pdf.py');
-//     const finalizedEntries = await PHistory.find({ isFinal: true });
+router.post('/convert-all-pdfs', async (req, res) => {
+    const pythonScriptPath = path.join(__dirname, '..', 'scripts', 'xlsx-pdf.py');
+    const finalizedEntries = await PHistory.find({ isFinal: true });
 
-//     let convertedCount = 0;
-//     let skippedCount = 0;
-//     let errors = [];
+    let convertedCount = 0;
+    let skippedCount = 0;
+    let errors = [];
 
-//     for (const entry of finalizedEntries) {
-//         const excelPath = entry.filePath;
-//         const pdfPath = excelPath.replace('.xlsx', '.pdf');
+    for (const entry of finalizedEntries) {
+        const excelPath = entry.filePath;
+        const pdfPath = excelPath.replace('.xlsx', '.pdf');
 
-//         if (fs.existsSync(pdfPath)) {
-//             skippedCount++;
-//             continue;
-//         }
+        if (fs.existsSync(pdfPath)) {
+            skippedCount++;
+            continue;
+        }
 
-//         const command = `python "${pythonScriptPath}" "${excelPath}" "${pdfPath}"`;
+        const command = `python "${pythonScriptPath}" "${excelPath}" "${pdfPath}"`;
 
-//         try {
-//             await new Promise((resolve, reject) => {
-//                 exec(command, (error, stdout, stderr) => {
-//                     if (error) {
-//                         console.error(`Failed to convert: ${excelPath}`, stderr);
-//                         errors.push({ file: excelPath, error: stderr });
-//                         return reject(error);
-//                     }
-//                     console.log(`Converted: ${excelPath} → ${pdfPath}`);
-//                     convertedCount++;
-//                     resolve();
-//                 });
-//             });
-//         } catch (err) {
-//             // Already handled inside the promise
-//         }
-//     }
+        try {
+            await new Promise((resolve, reject) => {
+                exec(command, (error, stdout, stderr) => {
+                    if (error) {
+                        console.error(`Failed to convert: ${excelPath}`, stderr);
+                        errors.push({ file: excelPath, error: stderr });
+                        return reject(error);
+                    }
+                    console.log(`Converted: ${excelPath} → ${pdfPath}`);
+                    convertedCount++;
+                    resolve();
+                });
+            });
+        } catch (err) {
+            // Already handled inside the promise
+        }
+    }
 
-//     res.json({
-//         message: `Conversion completed.`,
-//         converted: convertedCount,
-//         skipped: skippedCount,
-//         errors
-//     });
-// });
+    res.json({
+        message: `Conversion completed.`,
+        converted: convertedCount,
+        skipped: skippedCount,
+        errors
+    });
+});
 
 //For Arduino
 router.post('/copy-template', verifyDeviceToken , async (req, res) => {
