@@ -5,6 +5,8 @@ const { verifyDeviceToken } = require('../middleware/authMiddleware');
 
 //Function for Arduino
 router.post('/', verifyDeviceToken, async(req, res) => {
+    console.log(`[${new Date().toISOString()}] Incoming post request to checkmissedclockouts/`);
+
     try {
         //getting timecards where there is no clockOut time and it's not a manual add
         const missedClockouts = await Timecard.find({ clockOut: null, status: "Active" });

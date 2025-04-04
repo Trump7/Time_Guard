@@ -13,6 +13,8 @@ const payrollFileDir = path.join(__dirname, '..', 'Payroll-Files');
 
 
 router.get('/download-excel', verifyToken, checkAdmin, (req, res) => {
+    console.log(`[${new Date().toISOString()}] Incoming get request to payroll/download-excel`);
+
     const filePath = req.query.path;
     const fileName = path.basename(filePath);
 
@@ -25,6 +27,8 @@ router.get('/download-excel', verifyToken, checkAdmin, (req, res) => {
 
 //add verifyToken and checkAdmin once testing is done.
 router.get('/download-pdf/:fileName', async (req, res) => {
+    console.log(`[${new Date().toISOString()}] Incoming get request to payroll/download-pdf`);
+    
     const excelPath = req.params.path;
     if (!excelPath.endsWith('.xlsx')) {
         return res.status(400).send({ message: 'Invalid Excel file path.' });
@@ -43,6 +47,8 @@ router.get('/download-pdf/:fileName', async (req, res) => {
 
 // // Convert all previous xlsx files to pdfs...
 router.post('/convert-all-pdfs', async (req, res) => {
+    console.log(`[${new Date().toISOString()}] Incoming post request to payroll/convert-all-pdfs`);
+
     const pythonScriptPath = path.join(__dirname, '..', 'scripts', 'xlsx-pdf.py');
     const finalizedEntries = await PHistory.find({ isFinal: true });
 
@@ -89,6 +95,8 @@ router.post('/convert-all-pdfs', async (req, res) => {
 
 //For Arduino
 router.post('/copy-template', verifyDeviceToken , async (req, res) => {
+    console.log(`[${new Date().toISOString()}] Incoming post request to payroll/copy-template`);
+
     const templatePath = path.join(payrollFileDir, 'Template.xlsx');
     const destinationPath = path.join(payrollFileDir, 'Current-Payroll.xlsx');
 
@@ -146,6 +154,8 @@ router.post('/copy-template', verifyDeviceToken , async (req, res) => {
 
 //For Arduino
 router.post('/initial-fill', verifyDeviceToken , async (req, res) => {
+    console.log(`[${new Date().toISOString()}] Incoming post request to payroll/inital-fill`);
+
     const currentPath = path.join(payrollFileDir, 'Current-Payroll.xlsx');
     const workbook = new ExcelJS.Workbook();
 
@@ -195,6 +205,8 @@ router.post('/initial-fill', verifyDeviceToken , async (req, res) => {
 
 //need to add new confirmation for the timecard device to check if its been finalized
 router.get('/is-finalized', verifyDeviceToken, async (req, res) => {
+    console.log(`[${new Date().toISOString()}] Incoming get request to payroll/is-finalized`);
+
     try {
         const payroll = await PHistory.find({isFinal: false}).sort({ periodEndDate: -1 });
         console.log('Payroll has not been finalized...');
@@ -207,6 +219,8 @@ router.get('/is-finalized', verifyDeviceToken, async (req, res) => {
 
 
 router.get('/get-payroll-data', verifyToken, checkAdmin, async (req, res) => {
+    console.log(`[${new Date().toISOString()}] Incoming get request to payroll/get-payroll-data`);
+
     const currentPath = path.join(payrollFileDir, 'Current-Payroll.xlsx');
     const workbook = new ExcelJS.Workbook();
 
@@ -271,6 +285,8 @@ router.get('/get-payroll-data', verifyToken, checkAdmin, async (req, res) => {
 });
 
 router.put('/update-payroll', verifyToken, checkAdmin, async (req, res) => {
+    console.log(`[${new Date().toISOString()}] Incoming put request to payroll/update-payroll`);
+
     const { payrollData } = req.body;
     const currentPath = path.join(payrollFileDir, 'Current-Payroll.xlsx');
     const workbook = new ExcelJS.Workbook();
@@ -319,7 +335,8 @@ router.put('/update-payroll', verifyToken, checkAdmin, async (req, res) => {
 
   
 router.post('/finalize-payroll', verifyToken, checkAdmin, async (req, res) => {
-    console.log("Finalizing payroll data...");
+    console.log(`[${new Date().toISOString()}] Incoming post request to payroll/finalize-payroll`);
+
     const currentFilePath = path.join(payrollFileDir, 'Current-Payroll.xlsx');
     
     //Get the current date
@@ -371,6 +388,8 @@ router.post('/finalize-payroll', verifyToken, checkAdmin, async (req, res) => {
 });
 
 router.get('/current-payroll', verifyToken, checkAdmin, async (req, res) => {
+    console.log(`[${new Date().toISOString()}] Incoming get request to payroll/current-payroll`);
+
     try {
         const payroll = await PHistory.find({isFinal: false}).sort({ periodEndDate: -1 });
         res.status(200).json(payroll);
@@ -381,6 +400,8 @@ router.get('/current-payroll', verifyToken, checkAdmin, async (req, res) => {
 });
 
 router.get('/payroll-history', verifyToken, checkAdmin, async (req, res) => {
+    console.log(`[${new Date().toISOString()}] Incoming get request to payroll/payroll-history`);
+
     try {
         const payrollRecords = await PHistory.find({isFinal: true}).sort({ periodEndDate: -1 }).exec();
         res.status(200).json(payrollRecords);
@@ -390,6 +411,8 @@ router.get('/payroll-history', verifyToken, checkAdmin, async (req, res) => {
 });
 
 router.post('/add-hours', verifyToken, checkAdmin, async(req, res) => {
+    console.log(`[${new Date().toISOString()}] Incoming post request to payroll/add-hours`);
+
     const {employeeId, hours, message, date} = req.body;
     //console.log('Received add-hours request:', {employeeId, hours, message, date});
     const user = await User.findById(employeeId);

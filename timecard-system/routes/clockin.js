@@ -6,6 +6,8 @@ const { verifyDeviceToken } = require('../middleware/authMiddleware');
 
 //Function for Arduino
 router.post('/', verifyDeviceToken, async(req, res) => {
+    console.log(`[${new Date().toISOString()}] Incoming post request to clockin/`);
+
     const {rfid} = req.body;
     const user = await User.findOne({ rfid });
     if(user){

@@ -9,6 +9,8 @@ const { verifyToken, checkAdmin, verifyDeviceToken } = require('../middleware/au
 
 //add a new user
 router.post('/', verifyToken, checkAdmin, async(req, res) => {
+    console.log(`[${new Date().toISOString()}] Incoming post request to users/`);
+
     const {rfid, row} = req.body;
     let errorMessage = '';
 
@@ -39,6 +41,8 @@ router.post('/', verifyToken, checkAdmin, async(req, res) => {
 
 //get all current users
 router.get('/', verifyToken, checkAdmin, async (req, res) => {
+    console.log(`[${new Date().toISOString()}] Incoming get request to users/`);
+
     try {
       const users = await User.find();
       res.send(users);
@@ -50,6 +54,8 @@ router.get('/', verifyToken, checkAdmin, async (req, res) => {
 
 //get one employees info
 router.get('/myEmp', verifyToken, async(req, res) => {
+    console.log(`[${new Date().toISOString()}] Incoming get request to users/myEmp`);
+
     try{
         const user = await User.findById(req.user.id).select('name short username password');
         if(!user) return res.status(404).json({ message: 'User not found'});
@@ -62,6 +68,8 @@ router.get('/myEmp', verifyToken, async(req, res) => {
 
 //Edit non-critical user account info
 router.put('/upEmp', verifyToken, async (req, res) => {
+    console.log(`[${new Date().toISOString()}] Incoming put request to users/upEmp`);
+
     const { name, short, username, password } = req.body;
     const userId = req.user.id;
 
@@ -85,6 +93,8 @@ router.put('/upEmp', verifyToken, async (req, res) => {
 
 //get all employee names
 router.get('/employees', async(req, res) => {
+    console.log(`[${new Date().toISOString()}] Incoming get request to users/employees`);
+
     try {
         const employees = await User.find().select('name');
         res.json(employees.map((e) => e.name));
@@ -95,6 +105,8 @@ router.get('/employees', async(req, res) => {
 
 //get a personalized history
 router.get('/my-history', verifyToken, async(req, res) => {
+    console.log(`[${new Date().toISOString()}] Incoming get request to users/my-history`);
+    
     try{
         const userId = req.user.id;
 
@@ -108,6 +120,8 @@ router.get('/my-history', verifyToken, async(req, res) => {
 
 //get all history entries
 router.get('/history', verifyToken, checkAdmin, async (req, res) => {
+    console.log(`[${new Date().toISOString()}] Incoming get request to users/history`);
+
     try {
       const history = await Timecard.find();
       res.send(history);
@@ -119,6 +133,8 @@ router.get('/history', verifyToken, checkAdmin, async (req, res) => {
   
 //This API is for the Arduino Device
 router.post('/validate', verifyDeviceToken, async(req, res) => {
+    console.log(`[${new Date().toISOString()}] Incoming post request to users/validate`);
+
     const {rfid} = req.body;
     try{
         const user = await User.findOne({rfid});
@@ -140,6 +156,8 @@ router.post('/validate', verifyDeviceToken, async(req, res) => {
 
 // Reset user's times from Device
 router.put('/reset-times', verifyDeviceToken, async(req, res) => {
+    console.log(`[${new Date().toISOString()}] Incoming put request to users/reset-times`);
+
     try {
         //go through each user and update their total hours to 0
         await User.updateMany({}, {totalHours: 0});
@@ -154,6 +172,8 @@ router.put('/reset-times', verifyDeviceToken, async(req, res) => {
 
 //Edit user
 router.put('/:id', verifyToken, checkAdmin, async (req, res) => {
+    console.log(`[${new Date().toISOString()}] Incoming put request to users/`);
+
     const { rfid, row } = req.body;
     let errorMessage = '';
 
@@ -188,6 +208,8 @@ router.put('/:id', verifyToken, checkAdmin, async (req, res) => {
 
 // Delete user (Need to add to it...  Details like the history needs to be updated)
 router.delete('/:id', verifyToken, checkAdmin, async(req, res) => {
+    console.log(`[${new Date().toISOString()}] Incoming delete request to users/`);
+
     try {
         const user = await User.findByIdAndDelete(req.params.id);
         if (!user) {
@@ -203,6 +225,8 @@ router.delete('/:id', verifyToken, checkAdmin, async(req, res) => {
 
 // Fetch user by ID
 router.get('/:id', verifyToken, checkAdmin, async(req, res) => {
+    console.log(`[${new Date().toISOString()}] Incoming get request to users/:id`);
+
     try {
         const user = await User.findById(req.params.id);
         if (!user) {
@@ -218,6 +242,8 @@ router.get('/:id', verifyToken, checkAdmin, async(req, res) => {
 
 // User Login Route
 router.post('/loginUser', async (req, res) => {
+    console.log(`[${new Date().toISOString()}] Incoming post request to users/loginUser`);
+
     try{
         // Taking in the full name and provided pass
         const { selectedEmployee, password } = req.body;
@@ -244,6 +270,8 @@ router.post('/loginUser', async (req, res) => {
 
 // Login Route
 router.post('/login', async (req, res) => {
+    console.log(`[${new Date().toISOString()}] Incoming post request to users/login`);
+
     try {
         const { username, password } = req.body;
         const user = await Account.findOne({ username });
