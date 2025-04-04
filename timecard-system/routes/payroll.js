@@ -26,7 +26,7 @@ router.get('/download-excel', verifyToken, checkAdmin, (req, res) => {
 });
 
 //add verifyToken and checkAdmin once testing is done.
-router.get('/download-pdf/:fileName', async (req, res) => {
+router.get('/download-pdf/:fileName', verifyToken, checkAdmin, async (req, res) => {
     console.log(`[${new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })}] Incoming get request to payroll/download-pdf`);
     
     const excelPath = req.params.path;
@@ -42,54 +42,6 @@ router.get('/download-pdf/:fileName', async (req, res) => {
             console.error('Error downloading PDF:', err);
             res.status(500).send({ message: 'Error downloading PDF file.' });
         }
-    });
-});
-
-// // Convert all previous xlsx files to pdfs...
-router.post('/convert-all-pdfs', async (req, res) => {
-    console.log(`[${new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })}] Incoming post request to payroll/convert-all-pdfs`);
-
-    const pythonScriptPath = path.join(__dirname, '..', 'scripts', 'xlsx-pdf.py');
-    const finalizedEntries = await PHistory.find({ isFinal: true });
-
-    let convertedCount = 0;
-    let skippedCount = 0;
-    let errors = [];
-
-    for (const entry of finalizedEntries) {
-        const excelPath = entry.filePath;
-        const pdfPath = excelPath.replace('.xlsx', '.pdf');
-
-        if (fs.existsSync(pdfPath)) {
-            skippedCount++;
-            continue;
-        }
-
-        const command = `python "${pythonScriptPath}" "${excelPath}" "${pdfPath}"`;
-
-        try {
-            await new Promise((resolve, reject) => {
-                exec(command, (error, stdout, stderr) => {
-                    if (error) {
-                        console.error(`Failed to convert: ${excelPath}`, stderr);
-                        errors.push({ file: excelPath, error: stderr });
-                        return reject(error);
-                    }
-                    console.log(`Converted: ${excelPath} → ${pdfPath}`);
-                    convertedCount++;
-                    resolve();
-                });
-            });
-        } catch (err) {
-            // Already handled inside the promise
-        }
-    }
-
-    res.json({
-        message: `Conversion completed.`,
-        converted: convertedCount,
-        skipped: skippedCount,
-        errors
     });
 });
 
