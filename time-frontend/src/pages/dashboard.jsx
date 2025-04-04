@@ -214,8 +214,27 @@ const Dashboard = ({ onLogout }) => {
   };
   
 
-  const handleDownloadPdf = (fileName) => {
+  const handleDownloadPdf = async (filePath) => {
+    const pdfPath = filePath.replace('.xlsx', '.pdf');
 
+    try {
+      const response = await axios.get(`${BASE_URL}/payroll/download-pdf`, {
+        withCredentials: true,
+        params: { path: pdfPath },
+        responseType: 'blob',
+      });
+  
+      // Create a URL for the file blob and trigger a download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = pdfPath.split('\\').pop();
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error downloading PDF file:', error);
+    }
   };
 
   const handleEditClick = async () => {
@@ -462,9 +481,9 @@ const Dashboard = ({ onLogout }) => {
                     <button onClick={() => handleDownloadExcel(record.filePath)} className="px-3 py-2 rounded hover:bg-gray-200" title="Download as Excel Document">
                       <FontAwesomeIcon icon={faFileExcel} />
                     </button>
-                    {/* <button onClick={() => handleDownloadPdf(record.filePath)} className="px-3 py-2 rounded hover:bg-gray-200" title="Download as PDF Document">
+                    <button onClick={() => handleDownloadPdf(record.filePath)} className="px-3 py-2 rounded hover:bg-gray-200" title="Download as PDF Document">
                       <FontAwesomeIcon icon={faFilePdf} />
-                    </button> */}
+                    </button>
                   </div>
                 </div>
               );

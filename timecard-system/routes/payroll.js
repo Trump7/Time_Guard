@@ -25,16 +25,9 @@ router.get('/download-excel', verifyToken, checkAdmin, (req, res) => {
     });
 });
 
-//add verifyToken and checkAdmin once testing is done.
-router.get('/download-pdf/:fileName', verifyToken, checkAdmin, async (req, res) => {
+router.get('/download-pdf', verifyToken, checkAdmin, async (req, res) => {
     console.log(`[${new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })}] Incoming get request to payroll/download-pdf`);
-    
-    const excelPath = req.params.path;
-    if (!excelPath.endsWith('.xlsx')) {
-        return res.status(400).send({ message: 'Invalid Excel file path.' });
-    }
-
-    const pdfPath = excelPath.replace('.xlsx', '.pdf');
+    const pdfPath = req.query.path;
     const pdfFileName = path.basename(pdfPath);
 
     res.download(pdfPath, pdfFileName, (err) => {
