@@ -5,7 +5,7 @@ const { verifyDeviceToken } = require('../middleware/authMiddleware');
 
 //Function for Arduino
 router.post('/', verifyDeviceToken, async(req, res) => {
-    console.log(`[${new Date().toLocaleString('sv-SE').replace(' ', 'T')}] Incoming post request to checkmissedclockouts/`);
+    console.log(`[${new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })}] Incoming post request to checkmissedclockouts/`);
 
     try {
         //getting timecards where there is no clockOut time and it's not a manual add

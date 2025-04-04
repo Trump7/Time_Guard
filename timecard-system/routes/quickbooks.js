@@ -6,7 +6,7 @@ const { verifyDeviceToken } = require('../middleware/authMiddleware');
   
 //This API is for the Python program
 router.post('/', verifyDeviceToken, async(req, res) => {
-    console.log(`[${new Date().toLocaleString('sv-SE').replace(' ', 'T')}] Incoming post request to quickbooks/`);
+    console.log(`[${new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })}] Incoming post request to quickbooks/`);
     
     const {rfid} = req.body;
     try{
